@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,6 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.Brush
 
 
 sealed class BottomDest(
@@ -51,34 +56,50 @@ private val bottomItems = listOf(
 fun CineTrackBottomBar(
     navController: NavController
 ) {
-    val bg = Color(0xFF050510)
     val backStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry.value?.destination?.route
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(bg)
+            .background(Color(0xFF050510))
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             bottomItems.forEach { item ->
                 val selected = item.route == currentRoute
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                val gradient = Brush.horizontalGradient(
+                    listOf(
+                        Color(0xFFFF9A3C),
+                        Color(0xFFFF4F45)
+                    )
+                )
+
+                Box(
                     modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 4.dp)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(
-                            if (selected) Color(0xFFFF6B3D) else Color.Transparent
+
+                        .then(
+                            if (selected) {
+                                Modifier.drawBehind {
+                                    drawRoundRect(
+                                        brush = gradient,
+                                        cornerRadius = CornerRadius(24.dp.toPx())
+                                    )
+                                }
+                            } else {
+                                Modifier
+                            }
                         )
                         .clickable {
-                            if (currentRoute != item.route) {
+                            if (!selected) {
                                 navController.navigate(item.route) {
                                     popUpTo(navController.graph.startDestinationId) {
                                         saveState = true
@@ -89,25 +110,27 @@ fun CineTrackBottomBar(
                             }
                         }
                         .padding(
-                            horizontal = if (selected) 18.dp else 0.dp,
-                            vertical = 6.dp
-                        )
+                            vertical = 6.dp,
+                            horizontal = if (selected) 10.dp else 0.dp
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.label,
-                        tint = if (selected) Color.White else Color(0xFF8A8A99),
-                        modifier = Modifier
-                            .size(22.dp)
-                            .padding(bottom = 2.dp)
-                    )
-
-                    Text(
-                        text = item.label,
-                        color = if (selected) Color.White else Color(0xFF8A8A99),
-                        fontSize = 11.sp
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.label,
+                            tint = if (selected) Color.White else Color(0xFF8A8A99),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = item.label,
+                            color = if (selected) Color.White else Color(0xFF8A8A99),
+                            fontSize = 11.sp
+                        )
+                    }
                 }
             }
         }
