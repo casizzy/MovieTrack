@@ -1,21 +1,30 @@
-package nalgoticas.salle.cinetrack.ui.discover
+package nalgoticas.salle.cinetrack.ui.screens.home.diaryScreen.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,107 +37,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import nalgoticas.salle.cinetrack.data.Movie
-import nalgoticas.salle.cinetrack.data.MovieData
-import nalgoticas.salle.cinetrack.ui.home.MovieCategory
-
-private val discoverMovies: List<Movie> = MovieData.movies
 
 @Composable
-fun DiscoverScreen(
-    onMovieClick: (Movie) -> Unit
-) {
-    val bg = Color(0xFF050510)
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bg)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        DiscoverTopBar()
-        Spacer(Modifier.height(8.dp))
-        DiscoverSearchField()
-        Spacer(Modifier.height(16.dp))
-        MovieGrid(
-            movies = discoverMovies,
-            onMovieClick = onMovieClick
-        )
-    }
-}
-
-@Composable
-private fun DiscoverTopBar() {
-    Text(
-        text = "Discover",
-        color = Color.White,
-        fontSize = 24.sp,
-        fontWeight = FontWeight.Bold
-    )
-}
-
-@Composable
-private fun DiscoverSearchField() {
-    OutlinedTextField(
-        value = "",
-        onValueChange = { },
-        placeholder = {
-            Text(
-                text = "Search films...",
-                color = Color(0xFF8A8A99)
-            )
-        },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Filled.Search,
-                contentDescription = "Search",
-                tint = Color(0xFF8A8A99)
-            )
-        },
-        singleLine = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            unfocusedBorderColor = Color.Transparent,
-            focusedBorderColor = Color(0xFFFF6B3D),
-            unfocusedContainerColor = Color(0xFF12121E),
-            focusedContainerColor = Color(0xFF12121E),
-            cursorColor = Color.White
-        )
-    )
-}
-
-@Composable
-private fun MovieGrid(
-    movies: List<Movie>,
-    onMovieClick: (Movie) -> Unit
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(movies, key = { it.id }) { movie ->
-            MovieCard(
-                movie = movie,
-                onClick = { onMovieClick(movie) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun MovieCard(
+fun MovieDiaryCard(
     movie: Movie,
-    onClick: () -> Unit
+    watched: Boolean,
+    favorite: Boolean,
+    onToggleWatched: () -> Unit,
+    onToggleFavorite: () -> Unit
 ) {
+    var showActions by remember { mutableStateOf(false) }
+
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
+        modifier = Modifier.fillMaxWidth()
     ) {
         Box(
             modifier = Modifier
@@ -136,6 +57,7 @@ private fun MovieCard(
                 .aspectRatio(2f / 3f)
                 .clip(RoundedCornerShape(24.dp))
                 .background(Color(0xFF262636))
+                .clickable { showActions = !showActions }
         ) {
             AsyncImage(
                 model = movie.imageUrl,
@@ -162,11 +84,14 @@ private fun MovieCard(
                     .padding(8.dp)
                     .align(Alignment.TopStart)
                     .clip(RoundedCornerShape(50))
-                    .background(Color(0xFF1AC98A))
+                    .background(
+                        if (watched) Color(0xFF1AC98A)
+                        else Color(0x661AC98A)
+                    )
             ) {
                 Icon(
                     imageVector = Icons.Filled.Visibility,
-                    contentDescription = "Seen",
+                    contentDescription = "Watched",
                     tint = Color.White,
                     modifier = Modifier
                         .padding(6.dp)
@@ -205,6 +130,29 @@ private fun MovieCard(
                         color = Color.White,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            if (showActions) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircleActionButton(
+                        icon = Icons.Filled.Visibility,
+                        bg = Color(0xFF1AC98A),
+                        active = watched,
+                        onClick = onToggleWatched
+                    )
+                    CircleActionButton(
+                        icon = Icons.Filled.Favorite,
+                        bg = Color(0xFFFF4F6A),
+                        active = favorite,
+                        onClick = onToggleFavorite
                     )
                 }
             }

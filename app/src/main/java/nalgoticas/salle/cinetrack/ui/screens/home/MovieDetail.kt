@@ -1,4 +1,4 @@
-package nalgoticas.salle.cinetrack.ui.home
+package nalgoticas.salle.cinetrack.ui.screens.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import nalgoticas.salle.cinetrack.data.MovieCollections
 import nalgoticas.salle.cinetrack.data.MovieData
+import nalgoticas.salle.cinetrack.ui.theme.background
 
 @Composable
 fun MovieDetailScreen(
@@ -42,7 +43,7 @@ fun MovieDetailScreen(
 ) {
     val movie = MovieData.getMovie(movieId) ?: return
 
-    val bg = Color(0xFF050510)
+    val bg = background
     var yourRating by remember { mutableStateOf(movie.rating.toInt()) }
     var review by remember { mutableStateOf("") }
 

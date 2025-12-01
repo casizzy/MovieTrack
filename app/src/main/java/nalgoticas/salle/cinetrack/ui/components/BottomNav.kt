@@ -1,4 +1,4 @@
-package nalgoticas.salle.cinetrack.ui.theme
+package nalgoticas.salle.cinetrack.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +31,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
+import nalgoticas.salle.cinetrack.ui.theme.background
 
 
 sealed class BottomDest(
@@ -62,7 +63,7 @@ fun CineTrackBottomBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF050510))
+            .background(background)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Row(

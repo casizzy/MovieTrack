@@ -1,4 +1,4 @@
-package nalgoticas.salle.cinetrack.ui.home
+package nalgoticas.salle.cinetrack.ui.screens.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
