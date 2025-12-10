@@ -18,11 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,22 +28,52 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import nalgoticas.salle.cinetrack.data.Movie
+import nalgoticas.salle.cinetrack.data.remote.RetrofitInstance
 import nalgoticas.salle.cinetrack.ui.theme.background
+
+// Solo estado local para esta pantalla
+data class MovieDetailUiState(
+    val isLoading: Boolean = true,
+    val movie: Movie? = null,
+    val error: String? = null
+)
 
 @Composable
 fun MovieDetailScreen(
-    movieId: String,
-    onBack: () -> Unit,
-    homeViewModel: HomeViewModel = viewModel()
+    movieId: Int,
+    onBack: () -> Unit
 ) {
-    val state = homeViewModel.uiState
     val bg = background
 
+    var uiState by remember { mutableStateOf(MovieDetailUiState()) }
+
+    // Cargar la movie cuando entramos a esta pantalla
+    LaunchedEffect(movieId) {
+        uiState = uiState.copy(isLoading = true, error = null)
+
+        try {
+            val movie = withContext(Dispatchers.IO) {
+                RetrofitInstance.api.getMovieById(movieId)
+            }
+            uiState = uiState.copy(
+                isLoading = false,
+                movie = movie,
+                error = null
+            )
+        } catch (e: Exception) {
+            uiState = uiState.copy(
+                isLoading = false,
+                error = e.message ?: "Error loading movie"
+            )
+        }
+    }
+
     when {
-        state.isLoading -> {
+        uiState.isLoading -> {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -58,7 +84,7 @@ fun MovieDetailScreen(
             }
         }
 
-        state.error != null -> {
+        uiState.error != null -> {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -66,33 +92,31 @@ fun MovieDetailScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Error: ${state.error}",
+                    text = "Error: ${uiState.error}",
+                    color = Color.White
+                )
+            }
+        }
+
+        uiState.movie == null -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(bg),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Movie not found",
                     color = Color.White
                 )
             }
         }
 
         else -> {
-            val movie = state.movies.firstOrNull { it.id.toString() == movieId }
-
-            if (movie == null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(bg),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Movie not found",
-                        color = Color.White
-                    )
-                }
-            } else {
-                MovieDetailContent(
-                    movie = movie,
-                    onBack = onBack
-                )
-            }
+            MovieDetailContent(
+                movie = uiState.movie!!,
+                onBack = onBack
+            )
         }
     }
 }
@@ -120,7 +144,7 @@ private fun MovieDetailContent(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            // Imagen / header
+            // HEADER CON IMAGEN
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -165,7 +189,7 @@ private fun MovieDetailContent(
                 }
             }
 
-            // Contenido
+            // CONTENIDO
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -320,7 +344,12 @@ private fun MovieDetailContent(
                 Spacer(Modifier.height(18.dp))
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    movie.genres.forEachIndexed { index, genre ->
+                    val genreList = movie.genre
+                        ?.split(",")              // "Drama, Thriller" -> ["Drama", " Thriller"]
+                        ?.map { it.trim() }       // trim spaces
+                        ?: emptyList()
+
+                    genreList.forEachIndexed { index, genre ->
                         GenreChip(
                             text = genre,
                             isPrimary = index == 0

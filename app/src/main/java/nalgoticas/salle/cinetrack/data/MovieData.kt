@@ -5,7 +5,8 @@ data class Movie(
     val title: String,
     val year: Int,
     val durationMinutes: Int,
-    val genres: List<String>,
+    @SerializedName("genre")
+    val genre: String?,
     val rating: Float,
 
     @SerializedName("image_url")

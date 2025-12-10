@@ -103,10 +103,10 @@ fun CineTrackApp() {
             composable(
                 route = "details/{movieId}",
                 arguments = listOf(
-                    navArgument("movieId") { type = NavType.StringType }
+                    navArgument("movieId") { type = NavType.IntType }
                 )
             ) { backStackEntry ->
-                val id = backStackEntry.arguments?.getString("movieId") ?: return@composable
+                val id = backStackEntry.arguments?.getInt("movieId") ?: return@composable
                 MovieDetailScreen(
                     movieId = id,
                     onBack = { navController.popBackStack() }
