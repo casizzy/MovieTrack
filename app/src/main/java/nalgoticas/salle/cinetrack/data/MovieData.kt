@@ -4,6 +4,8 @@ data class Movie(
     val id: Int,
     val title: String,
     val year: Int,
+
+    @SerializedName("duration_minutes")
     val durationMinutes: Int,
     @SerializedName("genre")
     val genre: String?,
