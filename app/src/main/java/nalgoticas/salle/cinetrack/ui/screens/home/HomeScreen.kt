@@ -93,7 +93,7 @@ fun HomeScreen(
 @Composable
 private fun CineTrackTopBar() {
     Text(
-        text = "CineTrack",
+        text = "MovieTrack",
         color = Color.White,
         fontSize = 24.sp,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
