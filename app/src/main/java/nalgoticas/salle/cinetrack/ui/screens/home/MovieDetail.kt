@@ -28,7 +28,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -36,7 +35,7 @@ import nalgoticas.salle.cinetrack.data.Movie
 import nalgoticas.salle.cinetrack.data.remote.RetrofitInstance
 import nalgoticas.salle.cinetrack.ui.theme.background
 
-// Solo estado local para esta pantalla
+// Estado local solo para la pantalla de detalle
 data class MovieDetailUiState(
     val isLoading: Boolean = true,
     val movie: Movie? = null,
@@ -109,16 +108,24 @@ fun MovieDetailScreen(
             }
         }
 
-
         else -> {
             val movie = uiState.movie!!
+
             MovieDetailContent(
                 movie = movie,
                 onBack = onBack,
                 isWatched = movie.id in homeState.watchedIds,
                 isFavorite = movie.id in homeState.favoriteIds,
                 onToggleWatched = { homeViewModel.toggleWatched(movie.id) },
-                onToggleFavorite = { homeViewModel.toggleFavorite(movie.id) }
+                onToggleFavorite = { homeViewModel.toggleFavorite(movie.id) },
+                onRatingChange = { newRating ->
+                    // 1) Actualizamos el estado local del detalle
+                    uiState = uiState.copy(
+                        movie = uiState.movie?.copy(rating = newRating.toFloat())
+                    )
+                    // 2) Actualizamos HomeViewModel + API
+                    homeViewModel.updateMovieRating(movie.id, newRating.toFloat())
+                }
             )
         }
     }
@@ -131,7 +138,8 @@ private fun MovieDetailContent(
     isWatched: Boolean,
     isFavorite: Boolean,
     onToggleWatched: () -> Unit,
-    onToggleFavorite: () -> Unit
+    onToggleFavorite: () -> Unit,
+    onRatingChange: (Int) -> Unit
 ) {
     val bg = background
 
@@ -331,7 +339,11 @@ private fun MovieDetailContent(
                                     color = Color(0xFFFFC045),
                                     shape = RoundedCornerShape(12.dp)
                                 )
-                                .clickable { yourRating = index + 1 },
+                                .clickable {
+                                    val newRating = index + 1
+                                    yourRating = newRating
+                                    onRatingChange(newRating)
+                                },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -347,8 +359,8 @@ private fun MovieDetailContent(
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     val genreList = movie.genre
-                        ?.split(",")              // "Drama, Thriller" -> ["Drama", " Thriller"]
-                        ?.map { it.trim() }       // trim spaces
+                        ?.split(",")
+                        ?.map { it.trim() }
                         ?: emptyList()
 
                     genreList.forEachIndexed { index, genre ->
