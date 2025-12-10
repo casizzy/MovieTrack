@@ -88,7 +88,12 @@ fun MovieCard(
                 }
             }
 
-            RatingBadge(movie.rating)
+            RatingBadge(
+                rating = movie.rating,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.TopEnd)
+            )
 
             if (enableActions && showActions) {
                 Row(
