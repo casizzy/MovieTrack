@@ -22,7 +22,9 @@ data class HomeUiState(
     val movies: List<Movie> = emptyList(),
     val error: String? = null,
     val watchedIds: Set<Int> = emptySet(),
-    val favoriteIds: Set<Int> = emptySet()
+    val favoriteIds: Set<Int> = emptySet(),
+    val ratedMovieIds: Set<Int> = emptySet(),
+    val reviewedMovieIds: Set<Int> = emptySet()
 )
 
 class HomeViewModel : ViewModel() {
@@ -53,6 +55,8 @@ class HomeViewModel : ViewModel() {
                 return@launch
             }
 
+            val previousReviewed = uiState.reviewedMovieIds
+
             try {
                 val api = RetrofitInstance.api.create(MovieApiService::class.java)
 
@@ -62,6 +66,10 @@ class HomeViewModel : ViewModel() {
                         userId = userId,
                         movieId = movieId
                     )
+                )
+
+                uiState = uiState.copy(
+                    reviewedMovieIds = previousReviewed + movieId
                 )
 
             } catch (e: Exception) {
@@ -129,13 +137,14 @@ class HomeViewModel : ViewModel() {
     fun updateMovieRating(movieId: Int, newRating: Float) {
         viewModelScope.launch {
             val previousMovies = uiState.movies
+            val previousRated  = uiState.ratedMovieIds
 
 
             val locallyUpdated = previousMovies.map { movie ->
                 if (movie.id == movieId) movie.copy(rating = newRating)
                 else movie
             }
-            uiState = uiState.copy(movies = locallyUpdated)
+            uiState = uiState.copy(movies = locallyUpdated, ratedMovieIds = previousRated + movieId)
 
             try {
 
@@ -155,6 +164,7 @@ class HomeViewModel : ViewModel() {
 
                 uiState = uiState.copy(
                     movies = previousMovies,
+                    ratedMovieIds = previousRated,
                     error = e.message ?: "Error al actualizar rating"
                 )
             }

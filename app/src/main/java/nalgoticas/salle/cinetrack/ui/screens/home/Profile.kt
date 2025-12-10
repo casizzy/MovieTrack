@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import nalgoticas.salle.cinetrack.data.Preferences
 import nalgoticas.salle.cinetrack.ui.auth.AuthViewModel
+import androidx.compose.runtime.LaunchedEffect
 
 data class RecentActivity(
     val movieTitle: String,
@@ -56,8 +57,8 @@ data class StatItem(
 @Composable
 fun ProfileScreen(
     onLogout: () -> Unit,
+    homeViewModel: HomeViewModel,
 ) {
-    val homeViewModel: HomeViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
     val bg = Color(0xFF050510)
     val userId = Preferences.getUserId()
@@ -65,10 +66,10 @@ fun ProfileScreen(
 
     val state = homeViewModel.uiState
 
-    val watchedCount = state.watchedIds.size
+    val watchedCount   = state.watchedIds.size
     val favoritesCount = state.favoriteIds.size
-    val ratingsCount = watchedCount
-    val reviewsCount = 0
+    val ratingsCount   = state.ratedMovieIds.size
+    val reviewsCount   = state.reviewedMovieIds.size
 
     // Películas marcadas como watched
     val watchedMovies = state.movies.filter { it.id in state.watchedIds }
@@ -83,6 +84,10 @@ fun ProfileScreen(
                 rating = movie.rating.toInt()
             )
         }
+
+    LaunchedEffect(Unit) {
+        homeViewModel.syncWithLoggedUser()
+    }
 
     Column(
         modifier = Modifier
