@@ -78,9 +78,7 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
                 CineTrackTopBar()
-                Spacer(Modifier.height(8.dp))
-                SearchField()
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(24.dp))
                 CategoryTabs(
                     selected = selectedCategory,
                     onSelectedChange = { selectedCategory = it }
@@ -108,40 +106,6 @@ private fun CineTrackTopBar() {
     )
 }
 
-@Composable
-private fun SearchField() {
-    var query by remember { mutableStateOf("") }
-
-    OutlinedTextField(
-        value = query,
-        onValueChange = { query = it },
-        placeholder = {
-            Text(
-                text = "Search films...",
-                color = Color(0xFF8A8A99)
-            )
-        },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Filled.Search,
-                contentDescription = "Search",
-                tint = Color(0xFF8A8A99)
-            )
-        },
-        singleLine = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            unfocusedBorderColor = Color.Transparent,
-            focusedBorderColor = Color(0xFFFF6B3D),
-            unfocusedContainerColor = Color(0xFF12121E),
-            focusedContainerColor = Color(0xFF12121E),
-            cursorColor = Color.White
-        )
-    )
-}
 
 @Composable
 private fun CategoryTabs(
