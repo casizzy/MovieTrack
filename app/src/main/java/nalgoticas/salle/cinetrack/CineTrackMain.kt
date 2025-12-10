@@ -61,7 +61,6 @@ fun CineTrackApp() {
             composable("signup") {
                 RegisterScreen(
                     onRegister = { name, email, username, password ->
-                        // aquí luego llamas a tu API, por ahora solo navega a home
                         navController.navigate("home") {
                             popUpTo("login") { inclusive = true }
                         }
@@ -104,10 +103,10 @@ fun CineTrackApp() {
             composable(
                 route = "details/{movieId}",
                 arguments = listOf(
-                    navArgument("movieId") { type = NavType.IntType }
+                    navArgument("movieId") { type = NavType.StringType }
                 )
             ) { backStackEntry ->
-                val id = backStackEntry.arguments?.getInt("movieId") ?: return@composable
+                val id = backStackEntry.arguments?.getString("movieId") ?: return@composable
                 MovieDetailScreen(
                     movieId = id,
                     onBack = { navController.popBackStack() }

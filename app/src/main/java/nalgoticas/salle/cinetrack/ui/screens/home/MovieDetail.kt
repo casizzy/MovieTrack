@@ -39,7 +39,7 @@ import nalgoticas.salle.cinetrack.ui.theme.background
 
 @Composable
 fun MovieDetailScreen(
-    movieId: Int,
+    movieId: String,
     onBack: () -> Unit,
     homeViewModel: HomeViewModel = viewModel()
 ) {
@@ -73,7 +73,7 @@ fun MovieDetailScreen(
         }
 
         else -> {
-            val movie = state.movies.firstOrNull { it.id == movieId }
+            val movie = state.movies.firstOrNull { it.id.toString() == movieId }
 
             if (movie == null) {
                 Box(
