@@ -43,7 +43,7 @@ class HomeViewModel : ViewModel() {
 
 
 
-    /
+
     private var currentUserId: Int? = null
 
 
