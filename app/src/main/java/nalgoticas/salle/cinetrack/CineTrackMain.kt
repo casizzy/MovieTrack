@@ -96,8 +96,15 @@ fun CineTrackApp() {
 
             // PROFILE
             composable("profile") {
-                ProfileScreen()
+                ProfileScreen(
+                    onLogout = {
+                        navController.navigate("login") {
+                            popUpTo("home") { inclusive = true }
+                        }
+                    }
+                )
             }
+
 
             // DETAILS
             composable(
