@@ -79,7 +79,7 @@ private val statsItems = listOf(
 
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(onLogout: () -> Unit) {
     val bg = Color(0xFF050510)
 
     Column(
@@ -88,7 +88,6 @@ fun ProfileScreen() {
             .background(bg)
             .padding(horizontal = 16.dp)
     ) {
-
         Spacer(Modifier.height(16.dp))
 
         Text(
@@ -102,7 +101,8 @@ fun ProfileScreen() {
 
         UserCard(
             name = "Joe Mama",
-            username = "@joemama"
+            username = "@joemama",
+            onLogout = onLogout
         )
 
         Spacer(Modifier.height(24.dp))
@@ -129,7 +129,7 @@ fun ProfileScreen() {
 
 
 @Composable
-private fun UserCard(name: String, username: String) {
+private fun UserCard(name: String, username: String,  onLogout: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -209,7 +209,7 @@ private fun UserCard(name: String, username: String) {
                         shape = RoundedCornerShape(14.dp)
                     )
                     .clickable {
-                        // logica de logout
+                        onLogout()
                     },
                 contentAlignment = Alignment.Center
             ) {
