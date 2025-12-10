@@ -23,24 +23,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-
 data class RecentActivity(
     val movieTitle: String,
     val time: String,
     val rating: Int
-)
-
-private val sampleActivity = listOf(
-    RecentActivity(
-        movieTitle = "The Dark Knight",
-        time = "2 days ago",
-        rating = 5
-    ),
-    RecentActivity(
-        movieTitle = "Parasite",
-        time = "1 week ago",
-        rating = 4
-    )
 )
 
 data class StatItem(
@@ -50,37 +36,33 @@ data class StatItem(
     val gradient: List<Color>
 )
 
-private val statsItems = listOf(
-    StatItem(
-        icon = Icons.Filled.Movie,
-        label = "Films Watched",
-        count = "4",
-        gradient = listOf(Color(0xFFFF8A3C), Color(0xFFFF4F6A))
-    ),
-    StatItem(
-        icon = Icons.Filled.Star,
-        label = "Ratings",
-        count = "4",
-        gradient = listOf(Color(0xFFFFC045), Color(0xFFFFA726))
-    ),
-    StatItem(
-        icon = Icons.Filled.CalendarMonth,
-        label = "Reviews",
-        count = "1",
-        gradient = listOf(Color(0xFF4FC3F7), Color(0xFF1976D2))
-    ),
-    StatItem(
-        icon = Icons.Filled.Favorite,
-        label = "Favorites",
-        count = "2",
-        gradient = listOf(Color(0xFFFF4F6A), Color(0xFFE91E63))
-    )
-)
-
-
 @Composable
-fun ProfileScreen(onLogout: () -> Unit) {
+fun ProfileScreen(
+    onLogout: () -> Unit,
+    homeViewModel: HomeViewModel
+) {
     val bg = Color(0xFF050510)
+
+    val state = homeViewModel.uiState
+
+    val watchedCount = state.watchedIds.size
+    val favoritesCount = state.favoriteIds.size
+    val ratingsCount = watchedCount
+    val reviewsCount = 0
+
+    // Películas marcadas como watched
+    val watchedMovies = state.movies.filter { it.id in state.watchedIds }
+
+    // Lista de actividad reciente (últimas 5)
+    val recentActivity = watchedMovies
+        .takeLast(5)
+        .map { movie ->
+            RecentActivity(
+                movieTitle = movie.title,
+                time = "Recently",
+                rating = movie.rating.toInt()
+            )
+        }
 
     Column(
         modifier = Modifier
@@ -107,7 +89,12 @@ fun ProfileScreen(onLogout: () -> Unit) {
 
         Spacer(Modifier.height(24.dp))
 
-        StatsGrid()
+        StatsGrid(
+            watchedCount = watchedCount,
+            ratingsCount = ratingsCount,
+            reviewsCount = reviewsCount,
+            favoritesCount = favoritesCount
+        )
 
         Spacer(Modifier.height(32.dp))
 
@@ -120,16 +107,27 @@ fun ProfileScreen(onLogout: () -> Unit) {
 
         Spacer(Modifier.height(14.dp))
 
-        sampleActivity.forEach { activity ->
-            RecentActivityCard(activity)
-            Spacer(Modifier.height(14.dp))
+        if (recentActivity.isEmpty()) {
+            Text(
+                text = "No recent activity yet",
+                color = Color(0xFF8A8A99),
+                fontSize = 13.sp
+            )
+        } else {
+            recentActivity.forEach { activity ->
+                RecentActivityCard(activity)
+                Spacer(Modifier.height(14.dp))
+            }
         }
     }
 }
 
-
 @Composable
-private fun UserCard(name: String, username: String,  onLogout: () -> Unit) {
+private fun UserCard(
+    name: String,
+    username: String,
+    onLogout: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -143,8 +141,7 @@ private fun UserCard(name: String, username: String,  onLogout: () -> Unit) {
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .weight(1f)
+                modifier = Modifier.weight(1f)
             ) {
                 Box(
                     modifier = Modifier
@@ -208,9 +205,7 @@ private fun UserCard(name: String, username: String,  onLogout: () -> Unit) {
                         ),
                         shape = RoundedCornerShape(14.dp)
                     )
-                    .clickable {
-                        onLogout()
-                    },
+                    .clickable { onLogout() },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -224,9 +219,40 @@ private fun UserCard(name: String, username: String,  onLogout: () -> Unit) {
     }
 }
 
-
 @Composable
-private fun StatsGrid() {
+private fun StatsGrid(
+    watchedCount: Int,
+    ratingsCount: Int,
+    reviewsCount: Int,
+    favoritesCount: Int
+) {
+    val statsItems = listOf(
+        StatItem(
+            icon = Icons.Filled.Movie,
+            label = "Films Watched",
+            count = watchedCount.toString(),
+            gradient = listOf(Color(0xFFFF8A3C), Color(0xFFFF4F6A))
+        ),
+        StatItem(
+            icon = Icons.Filled.Star,
+            label = "Ratings",
+            count = ratingsCount.toString(),
+            gradient = listOf(Color(0xFFFFC045), Color(0xFFFFA726))
+        ),
+        StatItem(
+            icon = Icons.Filled.CalendarMonth,
+            label = "Reviews",
+            count = reviewsCount.toString(),
+            gradient = listOf(Color(0xFF4FC3F7), Color(0xFF1976D2))
+        ),
+        StatItem(
+            icon = Icons.Filled.Favorite,
+            label = "Favorites",
+            count = favoritesCount.toString(),
+            gradient = listOf(Color(0xFFFF4F6A), Color(0xFFE91E63))
+        )
+    )
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -322,10 +348,8 @@ private fun StatCard(
     }
 }
 
-
 @Composable
 private fun RecentActivityCard(activity: RecentActivity) {
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -333,7 +357,6 @@ private fun RecentActivityCard(activity: RecentActivity) {
             .background(Color(0xFF10101A))
             .padding(horizontal = 16.dp, vertical = 14.dp)
     ) {
-
         Column {
             Row(
                 verticalAlignment = Alignment.CenterVertically,

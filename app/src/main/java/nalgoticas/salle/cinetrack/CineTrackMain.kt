@@ -106,7 +106,7 @@ fun CineTrackApp() {
                         navController.navigate("login") {
                             popUpTo("home") { inclusive = true }
                         }
-                    }
+                    }, homeViewModel = homeViewModel
                 )
             }
 
