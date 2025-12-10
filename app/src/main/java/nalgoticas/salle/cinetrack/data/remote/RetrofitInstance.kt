@@ -7,11 +7,10 @@ object RetrofitInstance {
 
      private const val BASE_URL = "https://api-app-peliculas.onrender.com/"
 
-    val api: MovieApiService by lazy {
-        Retrofit.Builder()
+    val api = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(MovieApiService::class.java)
     }
-}
+
+

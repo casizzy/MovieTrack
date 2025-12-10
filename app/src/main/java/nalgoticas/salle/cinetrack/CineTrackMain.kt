@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import nalgoticas.salle.cinetrack.data.Preferences
 import nalgoticas.salle.cinetrack.ui.auth.LoginScreen
 import nalgoticas.salle.cinetrack.ui.auth.RegisterScreen
 import nalgoticas.salle.cinetrack.ui.components.CineTrackBottomBar
@@ -48,28 +49,14 @@ fun CineTrackApp() {
             // LOGIN
             composable("login") {
                 LoginScreen(
-                    onContinue = {
-                        navController.navigate("home") {
-                            popUpTo("login") { inclusive = true }
-                        }
-                    },
-                    onSignUpClick = {
-                        navController.navigate("signup")
-                    }
+                    nav = navController
                 )
             }
 
             // SIGN UP
             composable("signup") {
                 RegisterScreen(
-                    onRegister = { name, email, username, password ->
-                        navController.navigate("home") {
-                            popUpTo("login") { inclusive = true }
-                        }
-                    },
-                    onSwitchToLogin = {
-                        navController.popBackStack() // vuelve a login
-                    }
+                    navController
                 )
             }
 
@@ -103,6 +90,7 @@ fun CineTrackApp() {
             composable("profile") {
                 ProfileScreen(
                     onLogout = {
+                        Preferences.clearSettinga()
                         navController.navigate("login") {
                             popUpTo("home") { inclusive = true }
                         }

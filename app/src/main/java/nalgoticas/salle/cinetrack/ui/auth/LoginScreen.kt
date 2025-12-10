@@ -27,17 +27,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import nalgoticas.salle.cinetrack.data.Preferences
 
 @Composable
 fun LoginScreen(
-    onContinue: () -> Unit = {},
+    nav: NavController,
     onSignUpClick: () -> Unit = {}
 ) {
-    var emailOrUsername by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val vm: AuthViewModel = viewModel()
     var passwordVisible by remember { mutableStateOf(false) }
 
     var visible by remember { mutableStateOf(false) }
+    val isLogged = Preferences.getIsLogged()
+
+    LaunchedEffect(isLogged) {
+        if (isLogged){
+            nav.navigate("home"){
+                popUpTo("login"){
+                    inclusive = true
+                }
+            }
+        }
+    }
     LaunchedEffect(Unit) {
         visible = true
     }
@@ -82,7 +96,7 @@ fun LoginScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "CT",
+                        text = "MT",
                         color = Color.White,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold
@@ -92,7 +106,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "CineTrack",
+                    text = "MovieTrack",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFFFD1A0)
@@ -124,14 +138,14 @@ fun LoginScreen(
                     )
 
                     Text(
-                        text = "Email or Username",
+                        text = "Email",
                         fontSize = 14.sp,
                         color = Color.White,
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
                     OutlinedTextField(
-                        value = emailOrUsername,
-                        onValueChange = { emailOrUsername = it },
+                        value = vm.email,
+                        onValueChange = { vm.email = it },
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 56.dp),
@@ -153,8 +167,8 @@ fun LoginScreen(
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
                     OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
+                        value = vm.password,
+                        onValueChange = { vm.password = it },
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 56.dp),
@@ -185,7 +199,19 @@ fun LoginScreen(
 
                     Button(
                         onClick = {
-                            onContinue()
+                            if (vm.email.isBlank() || vm.password.isBlank()){
+                                return@Button
+                            } else {
+                                vm.login(
+                                    vm.email,
+                                    vm.password
+                                )
+                                nav.navigate("home"){
+                                    popUpTo("login"){
+                                        inclusive = true
+                                    }
+                                }
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -236,7 +262,7 @@ fun LoginScreen(
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.clickable {
-                                onSignUpClick()
+                                nav.navigate("signup")
                             }
                         )
                     }
@@ -260,7 +286,7 @@ fun LoginScreen(
 fun PreviewLoginScreen() {
     MaterialTheme {
         Box(modifier = Modifier.background(Color.Black)) {
-            LoginScreen()
+            LoginScreen(rememberNavController())
         }
     }
 }

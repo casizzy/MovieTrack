@@ -67,4 +67,7 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+
+    implementation("com.russhwolf:multiplatform-settings-no-arg:1.3.0")
+
 }

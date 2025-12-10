@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import nalgoticas.salle.cinetrack.data.Movie
+import nalgoticas.salle.cinetrack.data.remote.MovieApiService
 import nalgoticas.salle.cinetrack.data.remote.RatingUpdateRequest
 import nalgoticas.salle.cinetrack.data.remote.RetrofitInstance
 
@@ -34,6 +35,7 @@ class HomeViewModel : ViewModel() {
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, error = null)
             try {
+                val api = api.create(MovieApiService::class.java)
                 val movies = api.getMovies()
                 uiState = uiState.copy(
                     isLoading = false,
@@ -67,6 +69,7 @@ class HomeViewModel : ViewModel() {
 
             try {
                 // call PUT /movies/{id} with body { "rating": newRating }
+                val api = api.create(MovieApiService::class.java)
                 val updatedMovie = api.updateRating(
                     id = movieId,
                     body = RatingUpdateRequest(rating = newRating)

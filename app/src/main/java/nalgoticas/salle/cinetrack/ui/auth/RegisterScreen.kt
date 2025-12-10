@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -26,21 +27,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 
 @Composable
 fun RegisterScreen(
-    onRegister: (name: String, email: String, username: String, password: String) -> Unit,
-    onSwitchToLogin: () -> Unit
+    nav: NavController,
 ) {
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-
+    val vm: AuthViewModel = viewModel()
     var errorText by remember { mutableStateOf<String?>(null) }
 
     val orange = Color(0xFFFF7A1A)
@@ -87,10 +83,12 @@ fun RegisterScreen(
                 ) {
 
                     Text(
-                        text = "Create account",
+                        text = "Create Account",
+                        modifier = Modifier.fillMaxWidth(),
                         color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center
                     )
 
                     if (errorText != null) {
@@ -103,8 +101,8 @@ fun RegisterScreen(
 
                     CineTrackTextField(
                         label = "Full Name",
-                        value = name,
-                        onValueChange = { name = it },
+                        value = vm.name,
+                        onValueChange = { vm.name = it },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Person,
@@ -116,8 +114,8 @@ fun RegisterScreen(
 
                     CineTrackTextField(
                         label = "Email",
-                        value = email,
-                        onValueChange = { email = it },
+                        value = vm.email,
+                        onValueChange = { vm.email = it },
                         keyboardType = KeyboardType.Email,
                         leadingIcon = {
                             Icon(
@@ -130,8 +128,8 @@ fun RegisterScreen(
 
                     CineTrackTextField(
                         label = "Username",
-                        value = username,
-                        onValueChange = { username = it },
+                        value = vm.username,
+                        onValueChange = { vm.username = it },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Person,
@@ -143,8 +141,8 @@ fun RegisterScreen(
 
                     CineTrackTextField(
                         label = "Password",
-                        value = password,
-                        onValueChange = { password = it },
+                        value = vm.password,
+                        onValueChange = { vm.password = it },
                         keyboardType = KeyboardType.Password,
                         isPassword = true,
                         leadingIcon = {
@@ -158,8 +156,8 @@ fun RegisterScreen(
 
                     CineTrackTextField(
                         label = "Confirm Password",
-                        value = confirmPassword,
-                        onValueChange = { confirmPassword = it },
+                        value = vm.confirmPassword,
+                        onValueChange = { vm.confirmPassword = it },
                         keyboardType = KeyboardType.Password,
                         isPassword = true,
                         leadingIcon = {
@@ -176,19 +174,29 @@ fun RegisterScreen(
                     Button(
                         onClick = {
                             when {
-                                name.isBlank() || email.isBlank() ||
-                                        username.isBlank() || password.isBlank() ||
-                                        confirmPassword.isBlank() -> {
+                                vm.name.isBlank() || vm.email.isBlank() ||
+                                        vm.username.isBlank() || vm.password.isBlank() ||
+                                        vm.confirmPassword.isBlank() -> {
                                     errorText = "Please fill in all fields"
                                 }
 
-                                password != confirmPassword -> {
+                                vm.password != vm.confirmPassword -> {
                                     errorText = "Passwords do not match"
                                 }
 
                                 else -> {
                                     errorText = null
-                                    onRegister(name, email, username, password)
+                                    vm.register(
+                                        username = vm.username,
+                                        email= vm.email,
+                                        password = vm.password
+                                    )
+                                    nav.navigate("home"){
+                                        popUpTo("signup"){
+                                            inclusive = true
+                                        }
+                                    }
+
                                 }
                             }
                         },
@@ -222,7 +230,7 @@ fun RegisterScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
+                        horizontalArrangement = Arrangement.SpaceAround,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
@@ -235,7 +243,9 @@ fun RegisterScreen(
                             color = orange,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.clickable { onSwitchToLogin() }
+                            modifier = Modifier.clickable {
+                                nav.popBackStack()
+                            }
                         )
                     }
                 }
@@ -274,7 +284,7 @@ private fun CineTrackHeader() {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "CT",
+                text = "MT",
                 color = Color.White,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
@@ -330,9 +340,6 @@ private fun CineTrackTextField(
 @Composable
 fun RegisterScreenPreview() {
     MaterialTheme {
-        RegisterScreen(
-            onRegister = { _, _, _, _ -> },
-            onSwitchToLogin = {}
-        )
+        RegisterScreen(rememberNavController())
     }
 }
