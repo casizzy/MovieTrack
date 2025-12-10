@@ -9,9 +9,10 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -29,10 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import nalgoticas.salle.cinetrack.data.Movie
-import nalgoticas.salle.cinetrack.data.MovieCollections
-import nalgoticas.salle.cinetrack.data.MovieData
-
-private val trendingMovies: List<Movie> = MovieData.movies
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import nalgoticas.salle.cinetrack.ui.screens.home.components.MovieCard
 
 enum class MovieCategory(val label: String) {
     Trending("Trending"),
@@ -42,31 +42,55 @@ enum class MovieCategory(val label: String) {
 
 @Composable
 fun HomeScreen(
-    onMovieClick: (Movie) -> Unit
+    onMovieClick: (Movie) -> Unit,
+    viewModel: HomeViewModel = viewModel()
 ) {
+    val state = viewModel.uiState
     val bg = Color(0xFF050510)
     var selectedCategory by remember { mutableStateOf(MovieCategory.Trending) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bg)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        CineTrackTopBar()
-        Spacer(Modifier.height(8.dp))
-        SearchField()
-        Spacer(Modifier.height(16.dp))
-        CategoryTabs(
-            selected = selectedCategory,
-            onSelectedChange = { selectedCategory = it }
-        )
-        Spacer(Modifier.height(16.dp))
+    when {
+        state.isLoading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
 
-        MovieGrid(
-            movies = trendingMovies,
-            onMovieClick = onMovieClick
-        )
+        state.error != null -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Error: ${state.error}")
+            }
+        }
+
+        else -> {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(bg)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                CineTrackTopBar()
+                Spacer(Modifier.height(8.dp))
+                SearchField()
+                Spacer(Modifier.height(16.dp))
+                CategoryTabs(
+                    selected = selectedCategory,
+                    onSelectedChange = { selectedCategory = it }
+                )
+                Spacer(Modifier.height(16.dp))
+
+                MovieGrid(
+                    movies = state.movies,
+                    onMovieClick = onMovieClick
+                )
+            }
+        }
     }
 }
 
@@ -82,9 +106,11 @@ private fun CineTrackTopBar() {
 
 @Composable
 private fun SearchField() {
+    var query by remember { mutableStateOf("") }
+
     OutlinedTextField(
-        value = "",
-        onValueChange = { },
+        value = query,
+        onValueChange = { query = it },
         placeholder = {
             Text(
                 text = "Search films...",
@@ -133,25 +159,28 @@ private fun CategoryTabs(
             MovieCategory.values().forEach { category ->
                 val isSelected = category == selected
 
-                val brush = Brush.horizontalGradient(
+                val selectedBrush = Brush.horizontalGradient(
                     colors = listOf(
                         Color(0xFFFF8A4D),
                         Color(0xFFFF4F6A)
                     )
                 )
 
+                val backgroundModifier = if (isSelected) {
+                    Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(selectedBrush)
+                } else {
+                    Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color.Transparent)
+                }
+
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 4.dp)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(
-                            brush = if (isSelected) brush else Brush.linearGradient(
-                                listOf(Color.Transparent, Color.Transparent)
-                            ),
-                            shape = RoundedCornerShape(20.dp),
-                            alpha = 1f
-                        )
+                        .then(backgroundModifier)
                         .clickable { onSelectedChange(category) },
                     contentAlignment = Alignment.Center
                 ) {
@@ -208,133 +237,3 @@ private fun MovieGrid(
     }
 }
 
-@Composable
-private fun MovieCard(
-    movie: Movie,
-    onClick: () -> Unit
-) {
-
-    val isWatched = MovieCollections.isWatched(movie.id)
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(2f / 3f)
-                .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFF262636))
-        ) {
-            AsyncImage(
-                model = movie.imageUrl,
-                contentDescription = movie.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color(0xCC000000)
-                            )
-                        )
-                    )
-            )
-
-            Box(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.TopStart)
-                    .clip(RoundedCornerShape(50))
-                    .background(
-                        color = if (isWatched) Color(0xFF1AC98A) else Color(0x661AC98A),
-                        shape = RoundedCornerShape(50)
-                    )
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Visibility,
-                    contentDescription = "Seen",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .padding(6.dp)
-                        .size(16.dp)
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.TopEnd)
-                    .clip(RoundedCornerShape(50))
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFFFFC045),
-                                Color(0xFFFF8A3C)
-                            )
-                        )
-                    )
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Star,
-                        contentDescription = "Rating",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(14.dp)
-                            .padding(end = 2.dp)
-                    )
-                    Text(
-                        text = movie.rating.toString(),
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-        }
-
-        Spacer(Modifier.height(8.dp))
-
-        Text(
-            text = movie.title,
-            color = Color.White,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-
-        Spacer(Modifier.height(2.dp))
-
-        Text(
-            text = "${movie.year}",
-            color = Color(0xFF8A8A99),
-            fontSize = 12.sp
-        )
-
-        Spacer(Modifier.height(4.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            repeat(5) { index ->
-                val filled = index < movie.rating.toInt()
-                Icon(
-                    imageVector = Icons.Filled.Star,
-                    contentDescription = null,
-                    tint = if (filled) Color(0xFFFFC045) else Color(0xFF3A3A4A),
-                    modifier = Modifier.size(14.dp)
-                )
-            }
-        }
-    }
-}

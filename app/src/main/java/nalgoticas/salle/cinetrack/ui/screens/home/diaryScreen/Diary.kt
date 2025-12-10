@@ -6,35 +6,26 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material3.Icon
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import androidx.lifecycle.viewmodel.compose.viewModel
 import nalgoticas.salle.cinetrack.data.Movie
-import nalgoticas.salle.cinetrack.data.MovieCollections
-import nalgoticas.salle.cinetrack.data.MovieData
+import nalgoticas.salle.cinetrack.ui.screens.home.HomeViewModel
 import nalgoticas.salle.cinetrack.ui.screens.home.diaryScreen.components.MovieDiaryCard
-
-private val allMovies = MovieData.movies
 
 private enum class DiaryFilter(val label: String) {
     Watched("Watched"),
@@ -42,65 +33,114 @@ private enum class DiaryFilter(val label: String) {
 }
 
 @Composable
-fun DiaryScreen() {
+fun DiaryScreen(
+    homeViewModel: HomeViewModel = viewModel()
+) {
+    val state = homeViewModel.uiState
     val bg = Color(0xFF050510)
     var currentFilter by remember { mutableStateOf(DiaryFilter.Watched) }
 
-    val watchedMovies = allMovies.filter { MovieCollections.isWatched(it.id) }
-    val favoriteMovies = allMovies.filter { MovieCollections.isFavorite(it.id) }
+    var watchedIds by remember { mutableStateOf(setOf<Int>()) }
+    var favoriteIds by remember { mutableStateOf(setOf<Int>()) }
 
-    val moviesToShow = when (currentFilter) {
-        DiaryFilter.Watched -> watchedMovies
-        DiaryFilter.Favorites -> favoriteMovies
-    }
-
-    val watchedCount = watchedMovies.size
-    val favoritesCount = favoriteMovies.size
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bg)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(bg)
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-        ) {
-            Text(
-                text = "My Diary",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            DiaryTabs(
-                current = currentFilter,
-                watchedCount = watchedCount,
-                favoritesCount = favoritesCount,
-                onChange = { currentFilter = it }
-            )
+    when {
+        state.isLoading -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(bg),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(Color(0x33FFFFFF))
-        )
+        state.error != null -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(bg),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Error: ${state.error}",
+                    color = Color.White
+                )
+            }
+        }
 
-        Spacer(Modifier.height(12.dp))
+        else -> {
+            val allMovies = state.movies
 
-        MovieDiaryGrid(
-            movies = moviesToShow,
-            isWatched = { movie -> MovieCollections.isWatched(movie.id) },
-            isFavorite = { movie -> MovieCollections.isFavorite(movie.id) },
-            onToggleWatched = { movie -> MovieCollections.toggleWatched(movie.id) },
-            onToggleFavorite = { movie -> MovieCollections.toggleFavorite(movie.id) }
-        )
+            val watchedMovies = allMovies.filter { it.id in watchedIds }
+            val favoriteMovies = allMovies.filter { it.id in favoriteIds }
+
+            val moviesToShow = when (currentFilter) {
+                DiaryFilter.Watched -> watchedMovies
+                DiaryFilter.Favorites -> favoriteMovies
+            }
+
+            val watchedCount = watchedMovies.size
+            val favoritesCount = favoriteMovies.size
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(bg)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(bg)
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Text(
+                        text = "My Diary",
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+
+                    DiaryTabs(
+                        current = currentFilter,
+                        watchedCount = watchedCount,
+                        favoritesCount = favoritesCount,
+                        onChange = { currentFilter = it }
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(Color(0x33FFFFFF))
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                MovieDiaryGrid(
+                    movies = moviesToShow,
+                    isWatched = { movie -> movie.id in watchedIds },
+                    isFavorite = { movie -> movie.id in favoriteIds },
+                    onToggleWatched = { movie ->
+                        watchedIds = if (movie.id in watchedIds) {
+                            watchedIds - movie.id
+                        } else {
+                            watchedIds + movie.id
+                        }
+                    },
+                    onToggleFavorite = { movie ->
+                        favoriteIds = if (movie.id in favoriteIds) {
+                            favoriteIds - movie.id
+                        } else {
+                            favoriteIds + movie.id
+                        }
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -144,12 +184,7 @@ private fun DiaryTabs(
                         .clip(RoundedCornerShape(20.dp))
                         .then(
                             if (selected) {
-                                Modifier.drawBehind {
-                                    drawRoundRect(
-                                        brush = gradient,
-                                        cornerRadius = CornerRadius(20.dp.toPx())
-                                    )
-                                }
+                                Modifier.background(brush = gradient)
                             } else Modifier
                         )
                         .clickable { onChange(filter) }
@@ -196,4 +231,3 @@ private fun MovieDiaryGrid(
         }
     }
 }
-

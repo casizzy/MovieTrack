@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -26,32 +27,70 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import nalgoticas.salle.cinetrack.data.Movie
-import nalgoticas.salle.cinetrack.data.MovieData
-
-private val discoverMovies: List<Movie> = MovieData.movies
+import nalgoticas.salle.cinetrack.ui.screens.home.HomeViewModel
 
 @Composable
 fun DiscoverScreen(
-    onMovieClick: (Movie) -> Unit
+    onMovieClick: (Movie) -> Unit,
+    homeViewModel: HomeViewModel = viewModel()
 ) {
+    val state = homeViewModel.uiState
     val bg = Color(0xFF050510)
+    var query by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bg)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        DiscoverTopBar()
-        Spacer(Modifier.height(8.dp))
-        DiscoverSearchField()
-        Spacer(Modifier.height(16.dp))
-        MovieGrid(
-            movies = discoverMovies,
-            onMovieClick = onMovieClick
-        )
+    when {
+        state.isLoading -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(bg),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        state.error != null -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(bg),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Error: ${state.error}",
+                    color = Color.White
+                )
+            }
+        }
+
+        else -> {
+            val filteredMovies = state.movies.filter { movie ->
+                movie.title.contains(query, ignoreCase = true)
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(bg)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                DiscoverTopBar()
+                Spacer(Modifier.height(8.dp))
+                DiscoverSearchField(
+                    query = query,
+                    onQueryChange = { query = it }
+                )
+                Spacer(Modifier.height(16.dp))
+                MovieGrid(
+                    movies = filteredMovies,
+                    onMovieClick = onMovieClick
+                )
+            }
+        }
     }
 }
 
@@ -66,10 +105,13 @@ private fun DiscoverTopBar() {
 }
 
 @Composable
-private fun DiscoverSearchField() {
+private fun DiscoverSearchField(
+    query: String,
+    onQueryChange: (String) -> Unit
+) {
     OutlinedTextField(
-        value = "",
-        onValueChange = { },
+        value = query,
+        onValueChange = onQueryChange,
         placeholder = {
             Text(
                 text = "Search films...",

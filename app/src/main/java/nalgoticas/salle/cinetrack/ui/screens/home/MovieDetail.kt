@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -31,24 +32,82 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import nalgoticas.salle.cinetrack.data.MovieCollections
-import nalgoticas.salle.cinetrack.data.MovieData
+import nalgoticas.salle.cinetrack.data.Movie
 import nalgoticas.salle.cinetrack.ui.theme.background
 
 @Composable
 fun MovieDetailScreen(
     movieId: Int,
+    onBack: () -> Unit,
+    homeViewModel: HomeViewModel = viewModel()
+) {
+    val state = homeViewModel.uiState
+    val bg = background
+
+    when {
+        state.isLoading -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(bg),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        state.error != null -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(bg),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Error: ${state.error}",
+                    color = Color.White
+                )
+            }
+        }
+
+        else -> {
+            val movie = state.movies.firstOrNull { it.id == movieId }
+
+            if (movie == null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(bg),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Movie not found",
+                        color = Color.White
+                    )
+                }
+            } else {
+                MovieDetailContent(
+                    movie = movie,
+                    onBack = onBack
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MovieDetailContent(
+    movie: Movie,
     onBack: () -> Unit
 ) {
-    val movie = MovieData.getMovie(movieId) ?: return
-
     val bg = background
-    var yourRating by remember { mutableStateOf(movie.rating.toInt()) }
-    var review by remember { mutableStateOf("") }
 
-    var isWatched = MovieCollections.isWatched(movieId)
-    val isFavorite = MovieCollections.isFavorite(movieId)
+    var yourRating by remember(movie.id) { mutableStateOf(movie.rating.toInt()) }
+    var review by remember(movie.id) { mutableStateOf("") }
+    var isWatched by remember(movie.id) { mutableStateOf(false) }
+    var isFavorite by remember(movie.id) { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -61,6 +120,7 @@ fun MovieDetailScreen(
                 .verticalScroll(rememberScrollState())
         ) {
 
+            // Imagen / header
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -105,6 +165,7 @@ fun MovieDetailScreen(
                 }
             }
 
+            // Contenido
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -127,6 +188,7 @@ fun MovieDetailScreen(
 
                 Spacer(Modifier.height(16.dp))
 
+                // Rating + watched + favorite
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -176,7 +238,6 @@ fun MovieDetailScreen(
                                 shape = RoundedCornerShape(18.dp)
                             )
                             .clickable {
-                                MovieCollections.toggleWatched(movieId)
                                 isWatched = !isWatched
                             },
                         contentAlignment = Alignment.Center
@@ -210,7 +271,7 @@ fun MovieDetailScreen(
                                 color = if (isFavorite) Color(0xFFFF4F6A) else Color(0xFF0D0D16),
                                 shape = RoundedCornerShape(18.dp)
                             )
-                            .clickable { MovieCollections.toggleFavorite(movieId) },
+                            .clickable { isFavorite = !isFavorite },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -339,6 +400,7 @@ fun MovieDetailScreen(
         }
     }
 }
+
 @Composable
 private fun GenreChip(text: String, isPrimary: Boolean) {
     Box(

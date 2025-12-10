@@ -1,25 +1,27 @@
 package nalgoticas.salle.cinetrack
 
-import nalgoticas.salle.cinetrack.ui.auth.LoginScreen
-
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.navArgument
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import nalgoticas.salle.cinetrack.ui.auth.LoginScreen
+import nalgoticas.salle.cinetrack.ui.components.CineTrackBottomBar
 import nalgoticas.salle.cinetrack.ui.discover.DiscoverScreen
-import nalgoticas.salle.cinetrack.ui.screens.home.diaryScreen.DiaryScreen
 import nalgoticas.salle.cinetrack.ui.screens.home.HomeScreen
 import nalgoticas.salle.cinetrack.ui.screens.home.MovieDetailScreen
 import nalgoticas.salle.cinetrack.ui.screens.home.ProfileScreen
-import nalgoticas.salle.cinetrack.ui.components.CineTrackBottomBar
+import nalgoticas.salle.cinetrack.ui.screens.home.diaryScreen.DiaryScreen
+import nalgoticas.salle.cinetrack.ui.theme.CineTrackTheme
 import nalgoticas.salle.cinetrack.ui.theme.background
+
 
 @Composable
 fun CineTrackApp() {
@@ -67,8 +69,13 @@ fun CineTrackApp() {
                 )
             }
 
-            composable("diary")   { DiaryScreen() }
-            composable("profile") { ProfileScreen() }
+            composable("diary") {
+                DiaryScreen()
+            }
+
+            composable("profile") {
+                ProfileScreen()
+            }
 
             composable(
                 route = "details/{movieId}",
