@@ -12,7 +12,9 @@ import nalgoticas.salle.cinetrack.data.remote.RetrofitInstance
 data class HomeUiState(
     val isLoading: Boolean = true,
     val movies: List<Movie> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    val watchedIds: Set<Int> = emptySet(),
+    val favoriteIds: Set<Int> = emptySet()
 )
 
 class HomeViewModel : ViewModel() {
@@ -43,5 +45,19 @@ class HomeViewModel : ViewModel() {
                 )
             }
         }
+    }
+
+    fun toggleWatched(id: Int) {
+        val current = uiState.watchedIds
+        uiState = uiState.copy(
+            watchedIds = if (id in current) current - id else current + id
+        )
+    }
+
+    fun toggleFavorite(id: Int) {
+        val current = uiState.favoriteIds
+        uiState = uiState.copy(
+            favoriteIds = if (id in current) current - id else current + id
+        )
     }
 }

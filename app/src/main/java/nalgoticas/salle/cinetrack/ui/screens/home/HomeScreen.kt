@@ -43,7 +43,7 @@ enum class MovieCategory(val label: String) {
 @Composable
 fun HomeScreen(
     onMovieClick: (Movie) -> Unit,
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel
 ) {
     val state = viewModel.uiState
     val bg = Color(0xFF050510)

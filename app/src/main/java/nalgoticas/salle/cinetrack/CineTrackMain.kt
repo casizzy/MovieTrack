@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,6 +18,7 @@ import nalgoticas.salle.cinetrack.ui.auth.RegisterScreen
 import nalgoticas.salle.cinetrack.ui.components.CineTrackBottomBar
 import nalgoticas.salle.cinetrack.ui.discover.DiscoverScreen
 import nalgoticas.salle.cinetrack.ui.screens.home.HomeScreen
+import nalgoticas.salle.cinetrack.ui.screens.home.HomeViewModel
 import nalgoticas.salle.cinetrack.ui.screens.home.MovieDetailScreen
 import nalgoticas.salle.cinetrack.ui.screens.home.ProfileScreen
 import nalgoticas.salle.cinetrack.ui.screens.home.diaryScreen.DiaryScreen
@@ -29,7 +31,7 @@ fun CineTrackApp() {
     val bg = background
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-
+    val homeViewModel: HomeViewModel = viewModel()
     Scaffold(
         containerColor = bg,
         bottomBar = {
@@ -76,7 +78,8 @@ fun CineTrackApp() {
                 HomeScreen(
                     onMovieClick = { movie ->
                         navController.navigate("details/${movie.id}")
-                    }
+                    },
+                    viewModel = homeViewModel
                 )
             }
 
@@ -91,7 +94,9 @@ fun CineTrackApp() {
 
             // DIARY
             composable("diary") {
-                DiaryScreen()
+                DiaryScreen(
+                    homeViewModel = homeViewModel
+                )
             }
 
             // PROFILE
@@ -116,7 +121,8 @@ fun CineTrackApp() {
                 val id = backStackEntry.arguments?.getInt("movieId") ?: return@composable
                 MovieDetailScreen(
                     movieId = id,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    homeViewModel = homeViewModel,
                 )
             }
         }

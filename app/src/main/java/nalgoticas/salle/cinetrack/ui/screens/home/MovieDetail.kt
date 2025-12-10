@@ -28,6 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -45,25 +46,21 @@ data class MovieDetailUiState(
 @Composable
 fun MovieDetailScreen(
     movieId: Int,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    homeViewModel: HomeViewModel,
 ) {
     val bg = background
+    val homeState = homeViewModel.uiState
 
     var uiState by remember { mutableStateOf(MovieDetailUiState()) }
 
-    // Cargar la movie cuando entramos a esta pantalla
     LaunchedEffect(movieId) {
         uiState = uiState.copy(isLoading = true, error = null)
-
         try {
             val movie = withContext(Dispatchers.IO) {
                 RetrofitInstance.api.getMovieById(movieId)
             }
-            uiState = uiState.copy(
-                isLoading = false,
-                movie = movie,
-                error = null
-            )
+            uiState = uiState.copy(isLoading = false, movie = movie, error = null)
         } catch (e: Exception) {
             uiState = uiState.copy(
                 isLoading = false,
@@ -112,10 +109,16 @@ fun MovieDetailScreen(
             }
         }
 
+
         else -> {
+            val movie = uiState.movie!!
             MovieDetailContent(
-                movie = uiState.movie!!,
-                onBack = onBack
+                movie = movie,
+                onBack = onBack,
+                isWatched = movie.id in homeState.watchedIds,
+                isFavorite = movie.id in homeState.favoriteIds,
+                onToggleWatched = { homeViewModel.toggleWatched(movie.id) },
+                onToggleFavorite = { homeViewModel.toggleFavorite(movie.id) }
             )
         }
     }
@@ -124,14 +127,16 @@ fun MovieDetailScreen(
 @Composable
 private fun MovieDetailContent(
     movie: Movie,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    isWatched: Boolean,
+    isFavorite: Boolean,
+    onToggleWatched: () -> Unit,
+    onToggleFavorite: () -> Unit
 ) {
     val bg = background
 
     var yourRating by remember(movie.id) { mutableStateOf(movie.rating.toInt()) }
     var review by remember(movie.id) { mutableStateOf("") }
-    var isWatched by remember(movie.id) { mutableStateOf(false) }
-    var isFavorite by remember(movie.id) { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -261,9 +266,7 @@ private fun MovieDetailContent(
                                 color = if (isWatched) Color(0xFF1AC98A) else Color(0xFF0D0D16),
                                 shape = RoundedCornerShape(18.dp)
                             )
-                            .clickable {
-                                isWatched = !isWatched
-                            },
+                            .clickable { onToggleWatched() },
                         contentAlignment = Alignment.Center
                     ) {
                         Row(
@@ -273,7 +276,6 @@ private fun MovieDetailContent(
                                 imageVector = Icons.Filled.Visibility,
                                 contentDescription = "Watched",
                                 tint = Color.White,
-                                modifier = Modifier.size(20.dp)
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
@@ -295,7 +297,7 @@ private fun MovieDetailContent(
                                 color = if (isFavorite) Color(0xFFFF4F6A) else Color(0xFF0D0D16),
                                 shape = RoundedCornerShape(18.dp)
                             )
-                            .clickable { isFavorite = !isFavorite },
+                            .clickable { onToggleFavorite() },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

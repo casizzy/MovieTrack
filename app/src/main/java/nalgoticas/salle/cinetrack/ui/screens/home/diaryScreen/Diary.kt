@@ -34,14 +34,11 @@ private enum class DiaryFilter(val label: String) {
 
 @Composable
 fun DiaryScreen(
-    homeViewModel: HomeViewModel = viewModel()
+    homeViewModel: HomeViewModel
 ) {
     val state = homeViewModel.uiState
     val bg = Color(0xFF050510)
     var currentFilter by remember { mutableStateOf(DiaryFilter.Watched) }
-
-    var watchedIds by remember { mutableStateOf(setOf<Int>()) }
-    var favoriteIds by remember { mutableStateOf(setOf<Int>()) }
 
     when {
         state.isLoading -> {
@@ -71,6 +68,8 @@ fun DiaryScreen(
 
         else -> {
             val allMovies = state.movies
+            val watchedIds = state.watchedIds
+            val favoriteIds = state.favoriteIds
 
             val watchedMovies = allMovies.filter { it.id in watchedIds }
             val favoriteMovies = allMovies.filter { it.id in favoriteIds }
@@ -124,20 +123,8 @@ fun DiaryScreen(
                     movies = moviesToShow,
                     isWatched = { movie -> movie.id in watchedIds },
                     isFavorite = { movie -> movie.id in favoriteIds },
-                    onToggleWatched = { movie ->
-                        watchedIds = if (movie.id in watchedIds) {
-                            watchedIds - movie.id
-                        } else {
-                            watchedIds + movie.id
-                        }
-                    },
-                    onToggleFavorite = { movie ->
-                        favoriteIds = if (movie.id in favoriteIds) {
-                            favoriteIds - movie.id
-                        } else {
-                            favoriteIds + movie.id
-                        }
-                    }
+                    onToggleWatched = { movie -> homeViewModel.toggleWatched(movie.id) },
+                    onToggleFavorite = { movie -> homeViewModel.toggleFavorite(movie.id) }
                 )
             }
         }
