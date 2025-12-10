@@ -3,19 +3,11 @@ package nalgoticas.salle.cinetrack.ui.screens.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,18 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import nalgoticas.salle.cinetrack.data.Movie
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.collectAsState
-import nalgoticas.salle.cinetrack.ui.screens.home.components.MovieCard
 import nalgoticas.salle.cinetrack.ui.screens.home.components.MovieGrid
-
 
 enum class MovieCategory(val label: String) {
     Trending("Trending"),
@@ -71,6 +55,16 @@ fun HomeScreen(
         }
 
         else -> {
+            val moviesForCategory = when (selectedCategory) {
+                MovieCategory.Trending ->
+                    state.movies
+
+                MovieCategory.Popular ->
+                    state.movies.sortedByDescending { it.rating }
+
+                MovieCategory.New ->
+                    state.movies.sortedByDescending { it.id }
+            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -86,7 +80,7 @@ fun HomeScreen(
                 Spacer(Modifier.height(16.dp))
 
                 MovieGrid(
-                    movies = state.movies,
+                    movies = moviesForCategory,
                     watchedIds = state.watchedIds,
                     favoriteIds = state.favoriteIds,
                     onMovieClick = onMovieClick
@@ -102,10 +96,9 @@ private fun CineTrackTopBar() {
         text = "CineTrack",
         color = Color.White,
         fontSize = 24.sp,
-        fontWeight = FontWeight.Bold
+        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
     )
 }
-
 
 @Composable
 private fun CategoryTabs(
@@ -175,7 +168,10 @@ private fun CategoryTabs(
                             text = category.label,
                             color = if (isSelected) Color.White else Color(0xFF8A8A99),
                             fontSize = 13.sp,
-                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                            fontWeight = if (isSelected)
+                                androidx.compose.ui.text.font.FontWeight.SemiBold
+                            else
+                                androidx.compose.ui.text.font.FontWeight.Normal
                         )
                     }
                 }

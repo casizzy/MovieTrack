@@ -5,7 +5,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -23,7 +22,6 @@ import nalgoticas.salle.cinetrack.ui.screens.home.HomeViewModel
 import nalgoticas.salle.cinetrack.ui.screens.home.MovieDetailScreen
 import nalgoticas.salle.cinetrack.ui.screens.home.ProfileScreen
 import nalgoticas.salle.cinetrack.ui.screens.home.diaryScreen.DiaryScreen
-import nalgoticas.salle.cinetrack.ui.theme.CineTrackTheme
 import nalgoticas.salle.cinetrack.ui.theme.background
 
 @Composable
