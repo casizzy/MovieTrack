@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             CineTrackTheme {
-                CineTrackApp()   // <-- use the app-level composable with full NavHost
+                CineTrackApp()
             }
         }
     }

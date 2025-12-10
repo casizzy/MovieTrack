@@ -31,6 +31,10 @@ fun HomeScreen(
     onMovieClick: (Movie) -> Unit,
     viewModel: HomeViewModel
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.syncWithLoggedUser()
+    }
+
     val state = viewModel.uiState
     val bg = Color(0xFF050510)
     var selectedCategory by remember { mutableStateOf(MovieCategory.Trending) }
