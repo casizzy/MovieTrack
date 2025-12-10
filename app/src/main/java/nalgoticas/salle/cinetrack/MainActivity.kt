@@ -25,85 +25,21 @@ import nalgoticas.salle.cinetrack.ui.screens.home.HomeScreen
 import nalgoticas.salle.cinetrack.ui.screens.home.MovieDetailScreen
 import nalgoticas.salle.cinetrack.ui.screens.home.ProfileScreen
 import nalgoticas.salle.cinetrack.ui.theme.CineTrackTheme
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             CineTrackTheme {
-                val navController = rememberNavController()
-                val bg = Color(0xFF050510)
-
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
-
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    containerColor = bg,
-                    bottomBar = {
-                        // oculta la bottom bar en login
-                        if (currentRoute != "login") {
-                            CineTrackBottomBar(navController = navController)
-                        }
-                    }
-                ) { innerPadding ->
-                    NavHost(
-                        navController = navController,
-                        startDestination = "login",
-                        modifier = Modifier.padding(innerPadding)
-                    ) {
-                        composable("login") {
-                            // solo ui, pero el botón manda a home
-                            LoginScreen(
-                                onContinue = {
-                                    navController.navigate("home") {
-                                        popUpTo("login") { inclusive = true }
-                                    }
-                                }
-                            )
-                        }
-
-                        composable("home") {
-                            HomeScreen(
-                                onMovieClick = { movie ->
-                                    navController.navigate("details/${movie.id}")
-                                }
-                            )
-                        }
-
-                        composable("discover") {
-                            DiscoverScreen(
-                                onMovieClick = { movie ->
-                                    navController.navigate("details/${movie.id}")
-                                }
-                            )
-                        }
-
-                        composable("diary")   { DiaryScreen() }
-                        composable("profile") { ProfileScreen() }
-
-                        composable(
-                            route = "details/{movieId}",
-                            arguments = listOf(
-                                navArgument("movieId") { type = NavType.IntType }
-                            )
-                        ) { backStackEntry ->
-                            val id = backStackEntry.arguments?.getInt("movieId") ?: return@composable
-                            MovieDetailScreen(
-                                movieId = id,
-                                onBack = { navController.popBackStack() }
-                            )
-                        }
-                    }
-                }
+                CineTrackApp()   // <-- use the app-level composable with full NavHost
             }
         }
     }
 }
 
-@Preview(showBackground = true)
+
 @Composable
+@Preview(showBackground = true)
 fun CineTrackPreview() {
     CineTrackTheme {
         CineTrackApp()

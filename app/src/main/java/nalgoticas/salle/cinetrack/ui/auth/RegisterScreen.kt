@@ -4,8 +4,10 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -25,6 +27,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+
+
+
 @Composable
 fun RegisterScreen(
     onRegister: (name: String, email: String, username: String, password: String) -> Unit,
@@ -41,6 +46,7 @@ fun RegisterScreen(
     val orange = Color(0xFFFF7A1A)
     val pink = Color(0xFFFF2F92)
 
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -52,11 +58,12 @@ fun RegisterScreen(
                     )
                 )
             )
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
