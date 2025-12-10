@@ -1,20 +1,24 @@
 package nalgoticas.salle.cinetrack.ui.auth
 
-import android.content.res.Configuration
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,7 +26,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -34,7 +37,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import nalgoticas.salle.cinetrack.R
 
-
 @Composable
 fun RegisterScreen(
     nav: NavController,
@@ -42,9 +44,13 @@ fun RegisterScreen(
     val vm: AuthViewModel = viewModel()
     var errorText by remember { mutableStateOf<String?>(null) }
 
-    val orange = Color(0xFFFF7A1A)
-    val pink = Color(0xFFFF2F92)
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
 
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        visible = true
+    }
 
     Box(
         modifier = Modifier
@@ -57,122 +63,213 @@ fun RegisterScreen(
                     )
                 )
             )
+            .padding(24.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(animationSpec = tween(600)) +
+                    slideInVertically(animationSpec = tween(600)) { it / 4 },
+            exit = fadeOut(animationSpec = tween(300)) +
+                    slideOutVertically(animationSpec = tween(300)) { it / 4 },
+            modifier = Modifier.align(Alignment.Center)
         ) {
-
-            // Simple CT logo
-            CineTrackHeader()
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Card with form
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(28.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0x33FFFFFF) // glassmorphism feel
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
+                Image(
+                    painter = painterResource(id = R.drawable.cinetracklogo),
+                    contentDescription = "CineTrack logo",
+                    modifier = Modifier.size(120.dp)
+                )
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "MovieTrack",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFFD1A0)
+                )
+
+                Text(
+                    text = "Create your account to start tracking films",
+                    fontSize = 14.sp,
+                    color = Color(0xFFB3B3B3),
+                    modifier = Modifier
+                        .padding(top = 4.dp, bottom = 24.dp)
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = Color(0x1AFFFFFF),
+                            shape = RoundedCornerShape(24.dp)
+                        )
+                        .padding(20.dp)
+                ) {
                     Text(
-                        text = "Create Account",
-                        modifier = Modifier.fillMaxWidth(),
-                        color = Color.White,
-                        fontSize = 25.sp,
+                        text = "Create account",
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
-                        textAlign = TextAlign.Center
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 16.dp)
                     )
 
                     if (errorText != null) {
                         Text(
                             text = errorText!!,
                             color = Color(0xFFFF7373),
-                            fontSize = 13.sp
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
                     }
 
-                    CineTrackTextField(
-                        label = "Full Name",
+                    Text(
+                        text = "Full Name",
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    OutlinedTextField(
                         value = vm.name,
                         onValueChange = { vm.name = it },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = null,
-                                tint = Color(0xFF9CA3AF)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 56.dp),
+                        singleLine = true,
+                        placeholder = {
+                            Text(
+                                text = "Enter your full name",
+                                color = Color(0xFF8A8A8A)
                             )
                         }
                     )
 
-                    CineTrackTextField(
-                        label = "Email",
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Email",
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    OutlinedTextField(
                         value = vm.email,
                         onValueChange = { vm.email = it },
-                        keyboardType = KeyboardType.Email,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Email,
-                                contentDescription = null,
-                                tint = Color(0xFF9CA3AF)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 56.dp),
+                        singleLine = true,
+                        placeholder = {
+                            Text(
+                                text = "Enter your email",
+                                color = Color(0xFF8A8A8A)
                             )
                         }
                     )
 
-                    CineTrackTextField(
-                        label = "Username",
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Username",
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    OutlinedTextField(
                         value = vm.username,
                         onValueChange = { vm.username = it },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = null,
-                                tint = Color(0xFF9CA3AF)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 56.dp),
+                        singleLine = true,
+                        placeholder = {
+                            Text(
+                                text = "Choose a username",
+                                color = Color(0xFF8A8A8A)
                             )
                         }
                     )
 
-                    CineTrackTextField(
-                        label = "Password",
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Password",
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    OutlinedTextField(
                         value = vm.password,
                         onValueChange = { vm.password = it },
-                        keyboardType = KeyboardType.Password,
-                        isPassword = true,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = null,
-                                tint = Color(0xFF9CA3AF)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 56.dp),
+                        singleLine = true,
+                        visualTransformation = if (passwordVisible) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
+                        trailingIcon = {
+                            Text(
+                                text = if (passwordVisible) "Hide" else "Show",
+                                color = Color(0xFFB3B3B3),
+                                fontSize = 12.sp,
+                                modifier = Modifier
+                                    .clickable { passwordVisible = !passwordVisible }
+                            )
+                        },
+                        placeholder = {
+                            Text(
+                                text = "Create a password",
+                                color = Color(0xFF8A8A8A)
                             )
                         }
                     )
 
-                    CineTrackTextField(
-                        label = "Confirm Password",
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Confirm Password",
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    OutlinedTextField(
                         value = vm.confirmPassword,
                         onValueChange = { vm.confirmPassword = it },
-                        keyboardType = KeyboardType.Password,
-                        isPassword = true,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = null,
-                                tint = Color(0xFF9CA3AF)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 56.dp),
+                        singleLine = true,
+                        visualTransformation = if (confirmPasswordVisible) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
+                        trailingIcon = {
+                            Text(
+                                text = if (confirmPasswordVisible) "Hide" else "Show",
+                                color = Color(0xFFB3B3B3),
+                                fontSize = 12.sp,
+                                modifier = Modifier
+                                    .clickable { confirmPasswordVisible = !confirmPasswordVisible }
+                            )
+                        },
+                        placeholder = {
+                            Text(
+                                text = "Repeat your password",
+                                color = Color(0xFF8A8A8A)
                             )
                         }
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
                         onClick = {
@@ -191,32 +288,37 @@ fun RegisterScreen(
                                     errorText = null
                                     vm.register(
                                         username = vm.username,
-                                        email= vm.email,
+                                        email = vm.email,
                                         password = vm.password
                                     )
-                                    nav.navigate("home"){
-                                        popUpTo("signup"){
+                                    nav.navigate("home") {
+                                        popUpTo("signup") {
                                             inclusive = true
                                         }
                                     }
-
                                 }
                             }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(20.dp),
+                            .height(52.dp),
+                        shape = RoundedCornerShape(18.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Transparent
-                        )
+                        ),
+                        contentPadding = PaddingValues()
                     ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .background(
-                                    Brush.horizontalGradient(listOf(orange, pink)),
-                                    shape = RoundedCornerShape(20.dp)
+                                    brush = Brush.horizontalGradient(
+                                        colors = listOf(
+                                            Color(0xFFFF8A3D),
+                                            Color(0xFFFF4F8B)
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(18.dp)
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
@@ -229,21 +331,20 @@ fun RegisterScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        verticalAlignment = Alignment.CenterVertically
+                        horizontalArrangement = Arrangement.Center
                     ) {
                         Text(
                             text = "Already have an account? ",
-                            color = Color(0xFF9CA3AF),
+                            color = Color(0xFFB3B3B3),
                             fontSize = 14.sp
                         )
                         Text(
                             text = "Sign in",
-                            color = orange,
+                            color = Color(0xFFFF8A3D),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.clickable {
@@ -252,81 +353,26 @@ fun RegisterScreen(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Join thousands of film lovers",
+                    color = Color(0xFF808080),
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center
+                )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Join thousands of film lovers",
-                color = Color(0xFF6B7280),
-                fontSize = 13.sp,
-                textAlign = TextAlign.Center
-            )
         }
     }
 }
 
-
-@Composable
-private fun CineTrackHeader() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-            Image(
-                painter = painterResource(id = R.drawable.cinetracklogo),
-                contentDescription = "CineTrack logo",
-                modifier = Modifier.size(120.dp)
-            )
-    }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CineTrackTextField(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    isPassword: Boolean = false,
-    leadingIcon: @Composable (() -> Unit)? = null
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(text = label) },
-        modifier = Modifier.fillMaxWidth(),
-        singleLine = true,
-        leadingIcon = leadingIcon,
-        visualTransformation = if (isPassword) PasswordVisualTransformation()
-        else VisualTransformation.None,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = keyboardType
-        ),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color(0x33000000),
-            unfocusedContainerColor = Color(0x33000000),
-            focusedBorderColor = Color(0x33FFFFFF),
-            unfocusedBorderColor = Color(0x22FFFFFF),
-            focusedLabelColor = Color.White,
-            unfocusedLabelColor = Color(0xFF9CA3AF),
-            cursorColor = Color.White,
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White
-        ),
-        shape = RoundedCornerShape(18.dp)
-    )
-}
-
-@Preview(
-    name = "Register – Dark",
-    showBackground = true,
-    showSystemUi = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun RegisterScreenPreview() {
     MaterialTheme {
-        RegisterScreen(rememberNavController())
+        Box(modifier = Modifier.background(Color.Black)) {
+            RegisterScreen(rememberNavController())
+        }
     }
 }
