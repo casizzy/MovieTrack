@@ -40,6 +40,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import nalgoticas.salle.cinetrack.data.Preferences
 import nalgoticas.salle.cinetrack.ui.auth.AuthViewModel
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 
 data class RecentActivity(
     val movieTitle: String,
@@ -93,6 +96,7 @@ fun ProfileScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(bg)
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
     ) {
         Spacer(Modifier.height(16.dp))
