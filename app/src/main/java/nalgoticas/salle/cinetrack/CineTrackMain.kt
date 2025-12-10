@@ -23,7 +23,6 @@ import nalgoticas.salle.cinetrack.ui.screens.home.diaryScreen.DiaryScreen
 import nalgoticas.salle.cinetrack.ui.theme.CineTrackTheme
 import nalgoticas.salle.cinetrack.ui.theme.background
 
-
 @Composable
 fun CineTrackApp() {
     val navController = rememberNavController()
@@ -34,7 +33,7 @@ fun CineTrackApp() {
     Scaffold(
         containerColor = bg,
         bottomBar = {
-            if (currentRoute != "login") {
+            if (currentRoute != "login" && currentRoute != "signup") {
                 CineTrackBottomBar(navController = navController)
             }
         }
@@ -44,6 +43,7 @@ fun CineTrackApp() {
             startDestination = "login",
             modifier = Modifier.padding(innerPadding)
         ) {
+            // LOGIN
             composable("login") {
                 LoginScreen(
                     onContinue = {
@@ -57,56 +57,61 @@ fun CineTrackApp() {
                 )
             }
 
+            // SIGN UP
             composable("signup") {
                 RegisterScreen(
                     onRegister = { name, email, username, password ->
+                        // aquí luego llamas a tu API, por ahora solo navega a home
                         navController.navigate("home") {
                             popUpTo("login") { inclusive = true }
                         }
                     },
                     onSwitchToLogin = {
-                        navController.popBackStack()
+                        navController.popBackStack() // vuelve a login
                     }
                 )
+            }
 
+            // HOME
+            composable("home") {
+                HomeScreen(
+                    onMovieClick = { movie ->
+                        navController.navigate("details/${movie.id}")
+                    }
+                )
+            }
 
+            // DISCOVER
+            composable("discover") {
+                DiscoverScreen(
+                    onMovieClick = { movie ->
+                        navController.navigate("details/${movie.id}")
+                    }
+                )
+            }
 
-                composable("home") {
-                    HomeScreen(
-                        onMovieClick = { movie ->
-                            navController.navigate("details/${movie.id}")
-                        }
-                    )
-                }
+            // DIARY
+            composable("diary") {
+                DiaryScreen()
+            }
 
-                composable("discover") {
-                    DiscoverScreen(
-                        onMovieClick = { movie ->
-                            navController.navigate("details/${movie.id}")
-                        }
-                    )
-                }
+            // PROFILE
+            composable("profile") {
+                ProfileScreen()
+            }
 
-                composable("diary") {
-                    DiaryScreen()
-                }
-
-                composable("profile") {
-                    ProfileScreen()
-                }
-
-                composable(
-                    route = "details/{movieId}",
-                    arguments = listOf(
-                        navArgument("movieId") { type = NavType.IntType }
-                    )
-                ) { backStackEntry ->
-                    val id = backStackEntry.arguments?.getInt("movieId") ?: return@composable
-                    MovieDetailScreen(
-                        movieId = id,
-                        onBack = { navController.popBackStack() }
-                    )
-                }
+            // DETAILS
+            composable(
+                route = "details/{movieId}",
+                arguments = listOf(
+                    navArgument("movieId") { type = NavType.IntType }
+                )
+            ) { backStackEntry ->
+                val id = backStackEntry.arguments?.getInt("movieId") ?: return@composable
+                MovieDetailScreen(
+                    movieId = id,
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }
