@@ -9,6 +9,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import nalgoticas.salle.cinetrack.data.Movie
 import nalgoticas.salle.cinetrack.data.Preferences
+import nalgoticas.salle.cinetrack.data.ReviewRequest
 import nalgoticas.salle.cinetrack.ui.auth.Favorite
 import nalgoticas.salle.cinetrack.data.remote.MovieApiService
 import nalgoticas.salle.cinetrack.data.remote.RatingUpdateRequest
@@ -30,23 +31,7 @@ class HomeViewModel : ViewModel() {
         private set
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     private var currentUserId: Int? = null
-
-
 
 
     fun syncWithLoggedUser() {
@@ -57,6 +42,35 @@ class HomeViewModel : ViewModel() {
         loadMoviesAndFavorites(storedUserId)
     }
 
+    fun sendReview(
+        movieId: Int,
+        reviewText: String
+    ) {
+        viewModelScope.launch {
+            val userId = Preferences.getUserId()
+            if (userId == 0) {
+                uiState = uiState.copy(error = "No user id stored")
+                return@launch
+            }
+
+            try {
+                val api = RetrofitInstance.api.create(MovieApiService::class.java)
+
+                api.postReview(
+                    ReviewRequest(
+                        content = reviewText,
+                        userId = userId,
+                        movieId = movieId
+                    )
+                )
+
+            } catch (e: Exception) {
+                uiState = uiState.copy(
+                    error = e.message ?: "Error enviando review"
+                )
+            }
+        }
+    }
 
 
 

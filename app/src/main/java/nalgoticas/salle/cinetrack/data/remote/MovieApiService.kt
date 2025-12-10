@@ -1,6 +1,7 @@
 package nalgoticas.salle.cinetrack.data.remote
 
 import nalgoticas.salle.cinetrack.data.Movie
+import nalgoticas.salle.cinetrack.data.ReviewRequest
 import nalgoticas.salle.cinetrack.ui.auth.Favorite
 import nalgoticas.salle.cinetrack.ui.auth.FavoriteRequest
 import retrofit2.http.Body
@@ -45,4 +46,10 @@ interface MovieApiService {
         @Path("favorite_id") id: Int
 
     )
+
+    @POST("reviews/")
+    suspend fun postReview(
+        @Body body: ReviewRequest
+    )
+
 }

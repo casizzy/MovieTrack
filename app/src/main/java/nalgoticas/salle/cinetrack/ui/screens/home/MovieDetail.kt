@@ -135,12 +135,13 @@ fun MovieDetailScreen(
                 onToggleWatched = { homeViewModel.toggleWatched(movie.id) },
                 onToggleFavorite = { homeViewModel.toggleFavorite(movie.id) },
                 onRatingChange = { newRating ->
-                    // 1) Actualizamos el estado local del detalle
                     uiState = uiState.copy(
                         movie = uiState.movie?.copy(rating = newRating.toFloat())
                     )
-                    // 2) Actualizamos HomeViewModel + API
                     homeViewModel.updateMovieRating(movie.id, newRating.toFloat())
+                },
+                onSubmitReview = { reviewText ->
+                    homeViewModel.sendReview(movie.id, reviewText)
                 }
             )
         }
@@ -155,7 +156,8 @@ private fun MovieDetailContent(
     isFavorite: Boolean,
     onToggleWatched: () -> Unit,
     onToggleFavorite: () -> Unit,
-    onRatingChange: (Int) -> Unit
+    onRatingChange: (Int) -> Unit,
+    onSubmitReview: (String) -> Unit
 ) {
     val bg = background
 
@@ -443,6 +445,12 @@ private fun MovieDetailContent(
                                 )
                             )
                         )
+                        .clickable {
+                            if (review.isNotBlank()) {
+                                onSubmitReview(review)
+                                review = ""
+                            }
+                        }
                         .padding(horizontal = 24.dp, vertical = 10.dp),
                     contentAlignment = Alignment.Center
                 ) {

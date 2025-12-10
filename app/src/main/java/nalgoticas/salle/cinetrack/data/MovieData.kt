@@ -18,3 +18,10 @@ data class Movie(
     val cast: String
 )
 
+data class ReviewRequest(
+    val content: String,
+    @SerializedName("user_id")
+    val userId: Int,
+    @SerializedName("movie_id")
+    val movieId: Int
+)
