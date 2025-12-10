@@ -33,6 +33,8 @@ import nalgoticas.salle.cinetrack.data.Movie
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
 import nalgoticas.salle.cinetrack.ui.screens.home.components.MovieCard
+import nalgoticas.salle.cinetrack.ui.screens.home.components.MovieGrid
+
 
 enum class MovieCategory(val label: String) {
     Trending("Trending"),
@@ -87,6 +89,8 @@ fun HomeScreen(
 
                 MovieGrid(
                     movies = state.movies,
+                    watchedIds = state.watchedIds,
+                    favoriteIds = state.favoriteIds,
                     onMovieClick = onMovieClick
                 )
             }
@@ -215,25 +219,3 @@ private fun CategoryTabs(
         }
     }
 }
-
-@Composable
-private fun MovieGrid(
-    movies: List<Movie>,
-    onMovieClick: (Movie) -> Unit
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(movies, key = { it.id }) { movie ->
-            MovieCard(
-                movie = movie,
-                onClick = { onMovieClick(movie) }
-            )
-        }
-    }
-}
-

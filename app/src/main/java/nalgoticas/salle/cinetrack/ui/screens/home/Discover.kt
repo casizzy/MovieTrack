@@ -31,11 +31,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import nalgoticas.salle.cinetrack.data.Movie
 import nalgoticas.salle.cinetrack.ui.screens.home.HomeViewModel
+import nalgoticas.salle.cinetrack.ui.screens.home.components.MovieGrid
 
 @Composable
 fun DiscoverScreen(
     onMovieClick: (Movie) -> Unit,
-    homeViewModel: HomeViewModel = viewModel()
+    homeViewModel: HomeViewModel
 ) {
     val state = homeViewModel.uiState
     val bg = Color(0xFF050510)
@@ -87,6 +88,8 @@ fun DiscoverScreen(
                 Spacer(Modifier.height(16.dp))
                 MovieGrid(
                     movies = filteredMovies,
+                    watchedIds = state.watchedIds,
+                    favoriteIds = state.favoriteIds,
                     onMovieClick = onMovieClick
                 )
             }
@@ -138,150 +141,4 @@ private fun DiscoverSearchField(
             cursorColor = Color.White
         )
     )
-}
-
-@Composable
-private fun MovieGrid(
-    movies: List<Movie>,
-    onMovieClick: (Movie) -> Unit
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(movies, key = { it.id }) { movie ->
-            MovieCard(
-                movie = movie,
-                onClick = { onMovieClick(movie) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun MovieCard(
-    movie: Movie,
-    onClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(2f / 3f)
-                .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFF262636))
-        ) {
-            AsyncImage(
-                model = movie.imageUrl,
-                contentDescription = movie.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color(0xCC000000)
-                            )
-                        )
-                    )
-            )
-
-            Box(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.TopStart)
-                    .clip(RoundedCornerShape(50))
-                    .background(Color(0xFF1AC98A))
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Visibility,
-                    contentDescription = "Seen",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .padding(6.dp)
-                        .size(16.dp)
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.TopEnd)
-                    .clip(RoundedCornerShape(50))
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFFFFC045),
-                                Color(0xFFFF8A3C)
-                            )
-                        )
-                    )
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Star,
-                        contentDescription = "Rating",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(14.dp)
-                            .padding(end = 2.dp)
-                    )
-                    Text(
-                        text = movie.rating.toString(),
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-        }
-
-        Spacer(Modifier.height(8.dp))
-
-        Text(
-            text = movie.title,
-            color = Color.White,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-
-        Spacer(Modifier.height(2.dp))
-
-        Text(
-            text = "${movie.year}",
-            color = Color(0xFF8A8A99),
-            fontSize = 12.sp
-        )
-
-        Spacer(Modifier.height(4.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            repeat(5) { index ->
-                val filled = index < movie.rating.toInt()
-                Icon(
-                    imageVector = Icons.Filled.Star,
-                    contentDescription = null,
-                    tint = if (filled) Color(0xFFFFC045) else Color(0xFF3A3A4A),
-                    modifier = Modifier.size(14.dp)
-                )
-            }
-        }
-    }
 }

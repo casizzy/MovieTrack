@@ -14,6 +14,8 @@ import nalgoticas.salle.cinetrack.data.Movie
 @Composable
 fun MovieGrid(
     movies: List<Movie>,
+    watchedIds: Set<Int>,
+    favoriteIds: Set<Int>,
     onMovieClick: (Movie) -> Unit
 ) {
     LazyVerticalGrid(
@@ -26,6 +28,8 @@ fun MovieGrid(
         items(movies, key = { it.id }) { movie ->
             MovieCard(
                 movie = movie,
+                isWatched = movie.id in watchedIds,
+                isFavorite = movie.id in favoriteIds,
                 onClick = { onMovieClick(movie) }
             )
         }

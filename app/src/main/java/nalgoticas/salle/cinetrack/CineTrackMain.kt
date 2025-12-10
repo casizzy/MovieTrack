@@ -88,7 +88,7 @@ fun CineTrackApp() {
                 DiscoverScreen(
                     onMovieClick = { movie ->
                         navController.navigate("details/${movie.id}")
-                    }
+                    }, homeViewModel = homeViewModel
                 )
             }
 

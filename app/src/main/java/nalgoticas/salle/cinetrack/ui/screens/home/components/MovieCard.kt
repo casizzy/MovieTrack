@@ -2,28 +2,14 @@ package nalgoticas.salle.cinetrack.ui.screens.home.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,8 +28,8 @@ import nalgoticas.salle.cinetrack.ui.screens.home.diaryScreen.components.CircleA
 fun MovieCard(
     movie: Movie,
     modifier: Modifier = Modifier,
-    watched: Boolean? = null,
-    favorite: Boolean? = null,
+    isWatched: Boolean = false,
+    isFavorite: Boolean = false,
     enableActions: Boolean = false,
     onClick: (() -> Unit)? = null,
     onToggleWatched: (() -> Unit)? = null,
@@ -54,7 +40,10 @@ fun MovieCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { onClick?.invoke(); if (enableActions) showActions = !showActions }
+            .clickable {
+                onClick?.invoke()
+                if (enableActions) showActions = !showActions
+            }
     ) {
         Box(
             modifier = Modifier
@@ -63,7 +52,6 @@ fun MovieCard(
                 .clip(RoundedCornerShape(24.dp))
                 .background(Color(0xFF262636))
         ) {
-            // Poster
             AsyncImage(
                 model = movie.imageUrl,
                 contentDescription = movie.title,
@@ -71,7 +59,6 @@ fun MovieCard(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Overlay
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -82,28 +69,27 @@ fun MovieCard(
                     )
             )
 
-            // Watched badge
-            if (watched != null) {
+            if (isWatched) {
                 Box(
                     modifier = Modifier
                         .padding(8.dp)
                         .align(Alignment.TopStart)
                         .clip(RoundedCornerShape(50))
-                        .background(if (watched) Color(0xFF1AC98A) else Color(0x661AC98A))
+                        .background(Color(0xFF1AC98A))
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Visibility,
-                        contentDescription = "Watched",
+                        contentDescription = "Seen",
                         tint = Color.White,
-                        modifier = Modifier.padding(6.dp).size(16.dp)
+                        modifier = Modifier
+                            .padding(6.dp)
+                            .size(16.dp)
                     )
                 }
             }
 
-            // Rating badge
             RatingBadge(movie.rating)
 
-            // Diary
             if (enableActions && showActions) {
                 Row(
                     modifier = Modifier
@@ -112,10 +98,20 @@ fun MovieCard(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     onToggleWatched?.let {
-                        CircleActionButton(Icons.Filled.Visibility, Color(0xFF1AC98A), watched == true, it)
+                        CircleActionButton(
+                            Icons.Filled.Visibility,
+                            Color(0xFF1AC98A),
+                            isWatched,
+                            it
+                        )
                     }
                     onToggleFavorite?.let {
-                        CircleActionButton(Icons.Filled.Favorite, Color(0xFFFF4F6A), favorite == true, it)
+                        CircleActionButton(
+                            Icons.Filled.Favorite,
+                            Color(0xFFFF4F6A),
+                            isFavorite,
+                            it
+                        )
                     }
                 }
             }
