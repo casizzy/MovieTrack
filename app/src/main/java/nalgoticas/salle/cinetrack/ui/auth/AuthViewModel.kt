@@ -78,6 +78,23 @@ class AuthViewModel: ViewModel() {
         }
     }
 
+    fun getName(id: Int): String{
+        viewModelScope.launch {
+            try {
+                val service = api.create(AuthService::class.java)
+                val result = async {
+                    service.getUserById(id)
+                }
+                val user = result.await()
+                username = user.username
+            } catch (e: Error){
+                println("Error: Algo salió mal")
+                println(e.toString())
+            }
+        }
+        return username
+    }
+
 
 
 }

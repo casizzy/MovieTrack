@@ -3,11 +3,25 @@ package nalgoticas.salle.cinetrack.ui.screens.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +36,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import nalgoticas.salle.cinetrack.data.Preferences
+import nalgoticas.salle.cinetrack.ui.auth.AuthViewModel
 
 data class RecentActivity(
     val movieTitle: String,
@@ -39,9 +56,12 @@ data class StatItem(
 @Composable
 fun ProfileScreen(
     onLogout: () -> Unit,
-    homeViewModel: HomeViewModel
 ) {
+    val homeViewModel: HomeViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel()
     val bg = Color(0xFF050510)
+    val userId = Preferences.getUserId()
+    val name = authViewModel.getName(userId)
 
     val state = homeViewModel.uiState
 
@@ -82,8 +102,8 @@ fun ProfileScreen(
         Spacer(Modifier.height(16.dp))
 
         UserCard(
-            name = "Joe Mama",
-            username = "@joemama",
+            name = name,
+            username = "@${name}",
             onLogout = onLogout
         )
 
@@ -168,7 +188,7 @@ private fun UserCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "J",
+                            text = if (name.isNotEmpty()) name.first().uppercase() else "A",
                             color = Color.White,
                             fontSize = 30.sp,
                             fontWeight = FontWeight.Bold
@@ -209,7 +229,7 @@ private fun UserCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Logout,
+                    imageVector = Icons.AutoMirrored.Filled.Logout,
                     contentDescription = "Logout",
                     tint = Color.White,
                     modifier = Modifier.size(22.dp)
