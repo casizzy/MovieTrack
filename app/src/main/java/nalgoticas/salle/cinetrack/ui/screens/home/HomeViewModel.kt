@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import nalgoticas.salle.cinetrack.data.Movie
+import nalgoticas.salle.cinetrack.data.remote.RatingUpdateRequest
 import nalgoticas.salle.cinetrack.data.remote.RetrofitInstance
 
 data class HomeUiState(
@@ -28,7 +29,8 @@ class HomeViewModel : ViewModel() {
         loadMovies()
     }
 
-    private fun loadMovies() {
+    // Make this public so you can reload if needed
+    fun loadMovies() {
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, error = null)
             try {
@@ -42,6 +44,45 @@ class HomeViewModel : ViewModel() {
                 uiState = uiState.copy(
                     isLoading = false,
                     error = e.message ?: "Error cargando movies"
+                )
+            }
+        }
+    }
+
+    // Helper: find a movie by id from current state
+    fun getMovieById(id: Int): Movie? =
+        uiState.movies.find { it.id == id }
+
+    // Update rating locally + in API
+    fun updateMovieRating(movieId: Int, newRating: Float) {
+        viewModelScope.launch {
+            val previousMovies = uiState.movies
+
+            // optimistic UI update
+            val locallyUpdated = previousMovies.map { movie ->
+                if (movie.id == movieId) movie.copy(rating = newRating)
+                else movie
+            }
+            uiState = uiState.copy(movies = locallyUpdated)
+
+            try {
+                // call PUT /movies/{id} with body { "rating": newRating }
+                val updatedMovie = api.updateRating(
+                    id = movieId,
+                    body = RatingUpdateRequest(rating = newRating)
+                )
+
+                // replace with server version
+                val finalList = uiState.movies.map { movie ->
+                    if (movie.id == movieId) updatedMovie else movie
+                }
+                uiState = uiState.copy(movies = finalList)
+
+            } catch (e: Exception) {
+                // rollback if error
+                uiState = uiState.copy(
+                    movies = previousMovies,
+                    error = e.message ?: "Error al actualizar rating"
                 )
             }
         }
