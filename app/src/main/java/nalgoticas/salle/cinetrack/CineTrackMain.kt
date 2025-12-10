@@ -13,6 +13,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import nalgoticas.salle.cinetrack.ui.auth.LoginScreen
+import nalgoticas.salle.cinetrack.ui.auth.RegisterScreen
 import nalgoticas.salle.cinetrack.ui.components.CineTrackBottomBar
 import nalgoticas.salle.cinetrack.ui.discover.DiscoverScreen
 import nalgoticas.salle.cinetrack.ui.screens.home.HomeScreen
@@ -49,45 +50,63 @@ fun CineTrackApp() {
                         navController.navigate("home") {
                             popUpTo("login") { inclusive = true }
                         }
+                    },
+                    onSignUpClick = {
+                        navController.navigate("signup")
                     }
                 )
             }
 
-            composable("home") {
-                HomeScreen(
-                    onMovieClick = { movie ->
-                        navController.navigate("details/${movie.id}")
+            composable("signup") {
+                RegisterScreen(
+                    onRegister = { name, email, username, password ->
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                    onSwitchToLogin = {
+                        navController.popBackStack()
                     }
                 )
-            }
 
-            composable("discover") {
-                DiscoverScreen(
-                    onMovieClick = { movie ->
-                        navController.navigate("details/${movie.id}")
-                    }
-                )
-            }
 
-            composable("diary") {
-                DiaryScreen()
-            }
 
-            composable("profile") {
-                ProfileScreen()
-            }
+                composable("home") {
+                    HomeScreen(
+                        onMovieClick = { movie ->
+                            navController.navigate("details/${movie.id}")
+                        }
+                    )
+                }
 
-            composable(
-                route = "details/{movieId}",
-                arguments = listOf(
-                    navArgument("movieId") { type = NavType.IntType }
-                )
-            ) { backStackEntry ->
-                val id = backStackEntry.arguments?.getInt("movieId") ?: return@composable
-                MovieDetailScreen(
-                    movieId = id,
-                    onBack = { navController.popBackStack() }
-                )
+                composable("discover") {
+                    DiscoverScreen(
+                        onMovieClick = { movie ->
+                            navController.navigate("details/${movie.id}")
+                        }
+                    )
+                }
+
+                composable("diary") {
+                    DiaryScreen()
+                }
+
+                composable("profile") {
+                    ProfileScreen()
+                }
+
+                composable(
+                    route = "details/{movieId}",
+                    arguments = listOf(
+                        navArgument("movieId") { type = NavType.IntType }
+                    )
+                ) { backStackEntry ->
+                    val id = backStackEntry.arguments?.getInt("movieId") ?: return@composable
+                    MovieDetailScreen(
+                        movieId = id,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
             }
         }
     }

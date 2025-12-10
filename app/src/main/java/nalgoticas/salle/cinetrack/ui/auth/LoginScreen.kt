@@ -30,7 +30,8 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun LoginScreen(
-    onContinue: () -> Unit = {}
+    onContinue: () -> Unit = {},
+    onSignUpClick: () -> Unit = {}
 ) {
     var emailOrUsername by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -233,7 +234,10 @@ fun LoginScreen(
                             text = "Sign up",
                             color = Color(0xFFFF8A3D),
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.clickable {
+                                onSignUpClick()
+                            }
                         )
                     }
                 }
