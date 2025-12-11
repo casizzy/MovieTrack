@@ -25,3 +25,11 @@ data class ReviewRequest(
     @SerializedName("movie_id")
     val movieId: Int
 )
+
+data class Review(
+    val id: Int,
+    @SerializedName("content") val content: String,
+    @SerializedName("user_id") val userId: Int,
+    @SerializedName("movie_id") val movieId: Int,
+    var username: String? = null
+)

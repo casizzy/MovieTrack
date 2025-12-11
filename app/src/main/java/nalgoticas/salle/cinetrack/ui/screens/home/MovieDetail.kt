@@ -47,14 +47,17 @@ import coil.compose.AsyncImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import nalgoticas.salle.cinetrack.data.Movie
+import nalgoticas.salle.cinetrack.data.Review
 import nalgoticas.salle.cinetrack.data.remote.MovieApiService
 import nalgoticas.salle.cinetrack.data.remote.RetrofitInstance.api
+import nalgoticas.salle.cinetrack.ui.auth.AuthService
 import nalgoticas.salle.cinetrack.ui.theme.background
 
 // Estado local solo para la pantalla de detalle
 data class MovieDetailUiState(
     val isLoading: Boolean = true,
     val movie: Movie? = null,
+    val reviews: List<Review> = emptyList(),
     val error: String? = null
 )
 
@@ -69,13 +72,53 @@ fun MovieDetailScreen(
 
     var uiState by remember { mutableStateOf(MovieDetailUiState()) }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     LaunchedEffect(movieId) {
         uiState = uiState.copy(isLoading = true, error = null)
         try {
+            val service = api.create(MovieApiService::class.java)
+
             val movie = withContext(Dispatchers.IO) {
-                api.create(MovieApiService::class.java).getMovieById(movieId)
+                service.getMovieById(movieId)
             }
-            uiState = uiState.copy(isLoading = false, movie = movie, error = null)
+
+            val allReviews = withContext(Dispatchers.IO) {
+                service.getReviews()
+            }
+            val authService = api.create(AuthService::class.java)
+
+            val movieReviews = allReviews
+                .filter { it.movieId == movieId }
+                .map { review ->
+                    val user = withContext(Dispatchers.IO) {
+                        authService.getUserById(review.userId)
+                    }
+                    review.copy(username = user.username)
+                }
+
+            uiState = uiState.copy(
+                isLoading = false,
+                movie = movie,
+                reviews = movieReviews,
+                error = null
+            )
+
         } catch (e: Exception) {
             uiState = uiState.copy(
                 isLoading = false,
@@ -83,6 +126,34 @@ fun MovieDetailScreen(
             )
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     when {
         uiState.isLoading -> {
@@ -129,6 +200,7 @@ fun MovieDetailScreen(
 
             MovieDetailContent(
                 movie = movie,
+                reviews = uiState.reviews,
                 onBack = onBack,
                 isWatched = movie.id in homeState.watchedIds,
                 isFavorite = movie.id in homeState.favoriteIds,
@@ -151,6 +223,7 @@ fun MovieDetailScreen(
 @Composable
 private fun MovieDetailContent(
     movie: Movie,
+    reviews: List<Review>,
     onBack: () -> Unit,
     isWatched: Boolean,
     isFavorite: Boolean,
@@ -461,12 +534,59 @@ private fun MovieDetailContent(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
+                SectionTitle("Reviews")
+                Spacer(Modifier.height(8.dp))
+
+                if (reviews.isEmpty()) {
+                    Text(
+                        text = "No reviews yet.",
+                        color = Color(0xFFB0B0C0),
+                        fontSize = 13.sp
+                    )
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        reviews.forEach { review ->
+                            ReviewCard(review)
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(22.dp))
+
 
                 Spacer(Modifier.height(32.dp))
             }
         }
     }
 }
+
+@Composable
+private fun ReviewCard(review: Review) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFF151521))
+            .padding(12.dp)
+    ) {
+        Column {
+            Text(
+                text = review.username ?: "User ${review.userId}",
+                color = Color.White,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = review.content,
+                color = Color(0xFFDFDFE6),
+                fontSize = 13.sp
+            )
+        }
+    }
+}
+
 
 @Composable
 private fun GenreChip(text: String, isPrimary: Boolean) {

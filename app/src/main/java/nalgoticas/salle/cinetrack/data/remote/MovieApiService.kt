@@ -1,6 +1,7 @@
 package nalgoticas.salle.cinetrack.data.remote
 
 import nalgoticas.salle.cinetrack.data.Movie
+import nalgoticas.salle.cinetrack.data.Review
 import nalgoticas.salle.cinetrack.data.ReviewRequest
 import nalgoticas.salle.cinetrack.ui.auth.Favorite
 import nalgoticas.salle.cinetrack.ui.auth.FavoriteRequest
@@ -44,12 +45,16 @@ interface MovieApiService {
     @DELETE("favorites/{favorite_id}")
     suspend fun deleteFavorite(
         @Path("favorite_id") id: Int
-
     )
 
     @POST("reviews/")
     suspend fun postReview(
         @Body body: ReviewRequest
     )
+
+    @GET("reviews")
+    suspend fun getReviews(): List<Review>
+
+
 
 }
